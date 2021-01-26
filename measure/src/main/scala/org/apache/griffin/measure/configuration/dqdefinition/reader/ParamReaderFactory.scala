@@ -27,6 +27,9 @@ object ParamReaderFactory {
 
   /**
    * parse string content to get param reader
+   *
+   * 基于给定的文件路径返回对应的 ParamReader
+   *
    * @param pathOrJson
    * @return
    */

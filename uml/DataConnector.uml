@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>org.apache.griffin.measure.datasource.connector.DataConnector</OriginalElement>
+  <nodes>
+    <node x="45.5" y="85.0">org.apache.griffin.measure.datasource.connector.streaming.StreamingDataConnector</node>
+    <node x="1406.0" y="85.0">org.apache.griffin.measure.datasource.connector.batch.BatchDataConnector</node>
+    <node x="788.5952380952381" y="0.0">org.apache.griffin.measure.datasource.connector.DataConnector</node>
+    <node x="25.0" y="190.0">org.apache.griffin.measure.datasource.connector.streaming.KafkaStreamingDataConnector</node>
+    <node x="847.0" y="190.0">org.apache.griffin.measure.datasource.connector.batch.JDBCBasedDataConnector</node>
+    <node x="2195.0" y="190.0">org.apache.griffin.measure.datasource.connector.batch.ElasticSearchGriffinDataConnector</node>
+    <node x="1373.0" y="190.0">org.apache.griffin.measure.datasource.connector.batch.ElasticSearchDataConnector</node>
+    <node x="2549.0" y="190.0">org.apache.griffin.measure.datasource.connector.batch.FileBasedDataConnector</node>
+    <node x="329.0" y="190.0">org.apache.griffin.measure.datasource.connector.batch.TextDirBatchDataConnector</node>
+    <node x="0.0" y="275.0">org.apache.griffin.measure.datasource.connector.streaming.KafkaStreamingStringDataConnector</node>
+    <node x="1932.0" y="190.0">org.apache.griffin.measure.datasource.connector.batch.AvroBatchDataConnector</node>
+    <node x="617.0" y="190.0">org.apache.griffin.measure.datasource.connector.batch.MySqlDataConnector</node>
+    <node x="1110.0" y="190.0">org.apache.griffin.measure.datasource.connector.batch.HiveBatchDataConnector</node>
+    <node x="1669.0" y="190.0">org.apache.griffin.measure.datasource.connector.batch.CassandraDataConnector</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="org.apache.griffin.measure.datasource.connector.streaming.StreamingDataConnector" target="org.apache.griffin.measure.datasource.connector.DataConnector">
+      <point x="0.0" y="-17.5" />
+      <point x="167.0" y="60.0" />
+      <point x="830.8452380952381" y="60.0" />
+      <point x="-42.25" y="17.5" />
+    </edge>
+    <edge source="org.apache.griffin.measure.datasource.connector.batch.HiveBatchDataConnector" target="org.apache.griffin.measure.datasource.connector.batch.BatchDataConnector">
+      <point x="0.0" y="-17.5" />
+      <point x="1231.5" y="170.0" />
+      <point x="1487.6666666666667" y="170.0" />
+      <point x="-23.333333333333258" y="17.5" />
+    </edge>
+    <edge source="org.apache.griffin.measure.datasource.connector.streaming.KafkaStreamingStringDataConnector" target="org.apache.griffin.measure.datasource.connector.streaming.KafkaStreamingDataConnector">
+      <point x="0.0" y="-17.5" />
+      <point x="0.0" y="17.5" />
+    </edge>
+    <edge source="org.apache.griffin.measure.datasource.connector.streaming.KafkaStreamingDataConnector" target="org.apache.griffin.measure.datasource.connector.streaming.StreamingDataConnector">
+      <point x="0.0" y="-17.5" />
+      <point x="0.0" y="17.5" />
+    </edge>
+    <edge source="org.apache.griffin.measure.datasource.connector.batch.ElasticSearchDataConnector" target="org.apache.griffin.measure.datasource.connector.batch.BatchDataConnector">
+      <point x="0.0" y="-17.5" />
+      <point x="0.0" y="17.5" />
+    </edge>
+    <edge source="org.apache.griffin.measure.datasource.connector.batch.TextDirBatchDataConnector" target="org.apache.griffin.measure.datasource.connector.batch.BatchDataConnector">
+      <point x="0.0" y="-17.5" />
+      <point x="463.0" y="140.0" />
+      <point x="1417.6666666666667" y="140.0" />
+      <point x="-93.33333333333326" y="17.5" />
+    </edge>
+    <edge source="org.apache.griffin.measure.datasource.connector.batch.FileBasedDataConnector" target="org.apache.griffin.measure.datasource.connector.batch.BatchDataConnector">
+      <point x="0.0" y="-17.5" />
+      <point x="2670.5" y="140.0" />
+      <point x="1604.3333333333333" y="140.0" />
+      <point x="93.33333333333326" y="17.5" />
+    </edge>
+    <edge source="org.apache.griffin.measure.datasource.connector.batch.CassandraDataConnector" target="org.apache.griffin.measure.datasource.connector.batch.BatchDataConnector">
+      <point x="0.0" y="-17.5" />
+      <point x="1790.5" y="170.0" />
+      <point x="1534.3333333333333" y="170.0" />
+      <point x="23.333333333333258" y="17.5" />
+    </edge>
+    <edge source="org.apache.griffin.measure.datasource.connector.batch.MySqlDataConnector" target="org.apache.griffin.measure.datasource.connector.batch.BatchDataConnector">
+      <point x="0.0" y="-17.5" />
+      <point x="722.0" y="150.0" />
+      <point x="1441.0" y="150.0" />
+      <point x="-70.0" y="17.5" />
+    </edge>
+    <edge source="org.apache.griffin.measure.datasource.connector.batch.AvroBatchDataConnector" target="org.apache.griffin.measure.datasource.connector.batch.BatchDataConnector">
+      <point x="0.0" y="-17.5" />
+      <point x="2053.5" y="160.0" />
+      <point x="1557.6666666666665" y="160.0" />
+      <point x="46.666666666666515" y="17.5" />
+    </edge>
+    <edge source="org.apache.griffin.measure.datasource.connector.batch.ElasticSearchGriffinDataConnector" target="org.apache.griffin.measure.datasource.connector.batch.BatchDataConnector">
+      <point x="0.0" y="-17.5" />
+      <point x="2362.0" y="150.0" />
+      <point x="1581.0" y="150.0" />
+      <point x="70.0" y="17.5" />
+    </edge>
+    <edge source="org.apache.griffin.measure.datasource.connector.batch.JDBCBasedDataConnector" target="org.apache.griffin.measure.datasource.connector.batch.BatchDataConnector">
+      <point x="0.0" y="-17.5" />
+      <point x="968.5" y="160.0" />
+      <point x="1464.3333333333333" y="160.0" />
+      <point x="-46.66666666666674" y="17.5" />
+    </edge>
+    <edge source="org.apache.griffin.measure.datasource.connector.batch.BatchDataConnector" target="org.apache.griffin.measure.datasource.connector.DataConnector">
+      <point x="0.0" y="-17.5" />
+      <point x="1511.0" y="60.0" />
+      <point x="915.3452380952381" y="60.0" />
+      <point x="42.25" y="17.5" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="0.465149359886202" x="1396.0" y="155.0" />
+  <SelectedNodes>
+    <node>org.apache.griffin.measure.datasource.connector.DataConnector</node>
+  </SelectedNodes>
+  <Categories />
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+

@@ -17,12 +17,13 @@
 
 package org.apache.griffin.measure.launch
 
-import org.apache.griffin.measure.Loggable
-import org.apache.griffin.measure.configuration.dqdefinition.{DQConfig, EnvConfig, SinkParam}
+import scala.util.Try
+
 import org.apache.spark.metrics.sink.Sink
 import org.apache.spark.sql.SparkSession
 
-import scala.util.Try
+import org.apache.griffin.measure.Loggable
+import org.apache.griffin.measure.configuration.dqdefinition.{DQConfig, EnvConfig, SinkParam}
 
 /**
  * dq application process
@@ -34,13 +35,16 @@ trait DQApp extends Loggable with Serializable {
 
   implicit var sparkSession: SparkSession = _
 
+  // 初始化
   def init: Try[_]
 
   /**
+   * 启动执行
    * @return execution success
    */
   def run: Try[Boolean]
 
+  // 关闭
   def close: Try[_]
 
   /**
@@ -51,6 +55,8 @@ trait DQApp extends Loggable with Serializable {
   def retryable: Boolean
 
   /**
+   * 获取 measure 时间戳，如果未指定则使用当前时间戳
+   *
    * timestamp as a key for metrics
    */
   protected def getMeasureTime: Long = {

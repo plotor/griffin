@@ -22,6 +22,9 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include
 
 /**
  * full set of griffin configuration
+ *
+ * 聚合 env 和 dq 配置
+ *
  * @param envConfig   environment configuration (must)
  * @param dqConfig    dq measurement configuration (must)
  */

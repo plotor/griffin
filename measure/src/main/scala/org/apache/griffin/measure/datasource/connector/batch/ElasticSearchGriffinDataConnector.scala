@@ -83,7 +83,7 @@ case class ElasticSearchGriffinDataConnector(
         import sparkSession.implicits._
         val rdd: RDD[String] = sparkSession.sparkContext.parallelize(answer._2.lines.toList)
         val reader: DataFrameReader = sparkSession.read
-        reader.option("header", true).option("inferSchema", true)
+        reader.option("header", value = true).option("inferSchema", value = true)
         val df: DataFrame = reader.csv(rdd.toDS())
         val dfOpt = Some(df)
         val preDfOpt = preProcess(dfOpt, ms)

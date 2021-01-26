@@ -17,13 +17,15 @@
 
 package org.apache.griffin.measure.utils
 
-import org.apache.griffin.measure.Loggable
-
 import java.util.concurrent.TimeUnit
+
+import org.apache.griffin.measure.Loggable
 
 object CommonUtils extends Loggable {
 
   /**
+   * 执行参数指定的逻辑，并打印执行开销
+   *
    * Executes a given code block and logs the time taken for its execution.
    *
    * @param f Arbitrary code block

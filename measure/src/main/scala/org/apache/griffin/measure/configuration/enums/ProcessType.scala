@@ -23,6 +23,8 @@ import org.apache.griffin.measure.configuration.enums
  * process type enum
  *  <li> - Process in batch mode </li>
  *  <li> - Process in streaming mode</li>
+ *
+ *  运行模式
  */
 object ProcessType extends GriffinEnum {
   type ProcessType = Value

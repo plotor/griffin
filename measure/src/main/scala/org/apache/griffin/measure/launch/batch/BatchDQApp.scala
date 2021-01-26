@@ -17,6 +17,13 @@
 
 package org.apache.griffin.measure.launch.batch
 
+import java.util.concurrent.TimeUnit
+
+import scala.util.Try
+
+import org.apache.spark.SparkConf
+import org.apache.spark.sql.SparkSession
+
 import org.apache.griffin.measure.configuration.dqdefinition._
 import org.apache.griffin.measure.configuration.enums.ProcessType.BatchProcessType
 import org.apache.griffin.measure.context._
@@ -25,11 +32,6 @@ import org.apache.griffin.measure.job.builder.DQJobBuilder
 import org.apache.griffin.measure.launch.DQApp
 import org.apache.griffin.measure.step.builder.udf.GriffinUDFAgent
 import org.apache.griffin.measure.utils.CommonUtils
-import org.apache.spark.SparkConf
-import org.apache.spark.sql.SparkSession
-
-import java.util.concurrent.TimeUnit
-import scala.util.Try
 
 case class BatchDQApp(allParam: GriffinConfig) extends DQApp {
 
@@ -59,27 +61,29 @@ case class BatchDQApp(allParam: GriffinConfig) extends DQApp {
   }
 
   def run: Try[Boolean] = {
+    // 执行 {...} 逻辑，并打印执行开销
     val result = CommonUtils.timeThis({
       val measureTime = getMeasureTime
       val contextId = ContextId(measureTime)
 
-      // get data sources
+      // 获取并初始化数据源列表
       val dataSources =
         DataSourceFactory.getDataSources(sparkSession, null, dqParam.getDataSources)
       dataSources.foreach(_.init())
 
-      // create dq context
+      // 创建 DQ 上下文
       dqContext =
         DQContext(contextId, metricName, dataSources, sinkParams, BatchProcessType)(sparkSession)
 
       // start id
       val applicationId = sparkSession.sparkContext.applicationId
+      // 调用各个 sink 的 open 方法
       dqContext.getSinks.foreach(_.open(applicationId))
 
-      // build job
+      // 基于规则参数构造 DQ 任务
       val dqJob = DQJobBuilder.buildDQJob(dqContext, dqParam.getEvaluateRule)
 
-      // dq job execute
+      // 执行 DQ 任务
       dqJob.execute(dqContext)
     }, TimeUnit.MILLISECONDS)
 

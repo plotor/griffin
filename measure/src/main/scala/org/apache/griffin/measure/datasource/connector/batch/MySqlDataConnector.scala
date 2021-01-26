@@ -17,11 +17,12 @@
 
 package org.apache.griffin.measure.datasource.connector.batch
 
+import org.apache.spark.sql.{DataFrame, SparkSession}
+
 import org.apache.griffin.measure.configuration.dqdefinition.DataConnectorParam
 import org.apache.griffin.measure.context.TimeRange
 import org.apache.griffin.measure.datasource.TimestampStorage
 import org.apache.griffin.measure.utils.ParamUtil._
-import org.apache.spark.sql.{DataFrame, SparkSession}
 
 @deprecated(
   s"This class is deprecated. Use '${classOf[JDBCBasedDataConnector].getCanonicalName}'.",

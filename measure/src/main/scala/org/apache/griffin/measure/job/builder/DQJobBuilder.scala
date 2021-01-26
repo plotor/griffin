@@ -36,6 +36,7 @@ object DQJobBuilder {
    */
   def buildDQJob(context: DQContext, evaluateRuleParam: EvaluateRuleParam): DQJob = {
     val ruleParams = evaluateRuleParam.getRules
+    // 基于规则参数构造 DQ 任务
     buildDQJob(context, ruleParams)
   }
 

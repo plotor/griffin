@@ -17,10 +17,11 @@
 
 package org.apache.griffin.measure.sink
 
-import org.apache.griffin.measure.utils.ParamUtil._
-import org.apache.griffin.measure.utils.{HdfsUtil, JsonUtil}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
+
+import org.apache.griffin.measure.utils.{HdfsUtil, JsonUtil}
+import org.apache.griffin.measure.utils.ParamUtil._
 
 /**
  * sink metric and record to hdfs

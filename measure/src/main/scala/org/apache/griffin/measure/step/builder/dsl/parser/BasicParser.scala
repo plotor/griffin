@@ -17,14 +17,17 @@
 
 package org.apache.griffin.measure.step.builder.dsl.parser
 
-import org.apache.griffin.measure.step.builder.dsl.expr._
-
 import scala.util.parsing.combinator.JavaTokenParsers
+
+import org.apache.griffin.measure.step.builder.dsl.expr._
 
 /**
  * basic parser for sql like syntax
  */
 trait BasicParser extends JavaTokenParsers with Serializable {
+
+  import Literal._
+  import Strings._
 
   val dataSourceNames: Seq[String]
   val functionNames: Seq[String]

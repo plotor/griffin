@@ -17,10 +17,10 @@
 
 package org.apache.griffin.measure.job
 
+import scala.util.{Failure, Success, Try}
+
 import org.apache.griffin.measure.context.DQContext
 import org.apache.griffin.measure.step.DQStep
-
-import scala.util.{Failure, Success, Try}
 
 case class DQJob(dqSteps: Seq[DQStep]) extends Serializable {
 

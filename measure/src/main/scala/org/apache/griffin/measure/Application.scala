@@ -51,13 +51,15 @@ object Application extends Loggable {
     info(envParamFile)
     info(dqParamFile)
 
-    // read param files
+    // 加载 env 相关配置
     val envParam = readParamFile[EnvConfig](envParamFile) match {
       case Success(p) => p
       case Failure(ex) =>
         error(ex.getMessage, ex)
         sys.exit(-2)
     }
+
+    // 加载 DQ 相关配置
     val dqParam = readParamFile[DQConfig](dqParamFile) match {
       case Success(p) => p
       case Failure(ex) =>
@@ -66,19 +68,22 @@ object Application extends Loggable {
     }
     val allParam: GriffinConfig = GriffinConfig(envParam, dqParam)
 
-    // choose process
+    // 设置运行模式：batch or streaming
     val procType = ProcessType.withNameWithDefault(allParam.getDqConfig.getProcType)
     val dqApp: DQApp = procType match {
+      // 构建 Batch App
       case BatchProcessType => BatchDQApp(allParam)
+      // 构建 Streaming App
       case StreamingProcessType => StreamingDQApp(allParam)
       case _ =>
         error(s"$procType is unsupported process type!")
         sys.exit(-4)
     }
 
+    // 模板方法
     startup()
 
-    // dq app init
+    // 初始化 dq app
     dqApp.init match {
       case Success(_) =>
         info("process init success")
@@ -98,6 +103,7 @@ object Application extends Loggable {
         error(s"process run error: ${ex.getMessage}", ex)
 
         if (dqApp.retryable) {
+          // 抛出异常，触发 spark 重试执行
           throw ex
         } else {
           shutdown()
@@ -115,6 +121,7 @@ object Application extends Loggable {
         sys.exit(-5)
     }
 
+    // 模板方法
     shutdown()
 
     if (!success) {
@@ -124,6 +131,7 @@ object Application extends Loggable {
 
   def readParamFile[T <: Param](file: String)(implicit m: ClassTag[T]): Try[T] = {
     val paramReader = ParamReaderFactory.getParamReader(file)
+    // 基于 ParamReader 读取配置
     paramReader.readConfig[T]
   }
 

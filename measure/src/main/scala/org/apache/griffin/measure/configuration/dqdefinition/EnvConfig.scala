@@ -37,8 +37,11 @@ case class EnvConfig(
     @JsonProperty("sinks") private val sinkParams: List[SinkParam],
     @JsonProperty("griffin.checkpoint") private val checkpointParams: List[CheckpointParam])
     extends Param {
+
   def getSparkParam: SparkParam = sparkParam
+
   def getSinkParams: Seq[SinkParam] = if (sinkParams != null) sinkParams else Nil
+
   def getCheckpointParams: Seq[CheckpointParam] =
     if (checkpointParams != null) checkpointParams else Nil
 

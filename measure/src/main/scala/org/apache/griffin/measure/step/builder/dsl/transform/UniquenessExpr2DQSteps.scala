@@ -18,7 +18,10 @@
 package org.apache.griffin.measure.step.builder.dsl.transform
 
 import org.apache.griffin.measure.configuration.dqdefinition.RuleParam
-import org.apache.griffin.measure.configuration.enums.FlattenType.{ArrayFlattenType, EntriesFlattenType}
+import org.apache.griffin.measure.configuration.enums.FlattenType.{
+  ArrayFlattenType,
+  EntriesFlattenType
+}
 import org.apache.griffin.measure.configuration.enums.OutputType._
 import org.apache.griffin.measure.configuration.enums.ProcessType._
 import org.apache.griffin.measure.context.DQContext
@@ -35,6 +38,8 @@ import org.apache.griffin.measure.utils.ParamUtil._
  */
 case class UniquenessExpr2DQSteps(context: DQContext, expr: Expr, ruleParam: RuleParam)
     extends Expr2DQSteps {
+
+  import UniquenessKeys._
 
   def getDQSteps: Seq[DQStep] = {
     val details = ruleParam.getDetails

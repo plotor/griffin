@@ -33,6 +33,7 @@ import org.apache.griffin.measure.configuration.enums.SinkType.SinkType
 
 /**
  * dq param
+ *
  * @param name           name of dq measurement (must)
  * @param timestamp      default timestamp of measure in batch mode (optional)
  * @param procType       batch mode or streaming mode (must)
@@ -49,9 +50,13 @@ case class DQConfig(
     @JsonProperty("evaluate.rule") private val evaluateRule: EvaluateRuleParam,
     @JsonProperty("sinks") private val sinks: List[String] = Nil)
     extends Param {
+
   def getName: String = name
+
   def getTimestampOpt: Option[Long] = if (timestamp != 0) Some(timestamp) else None
+
   def getProcType: String = procType
+
   def getDataSources: Seq[DataSourceParam] = {
     dataSources
       .foldLeft((Nil: Seq[DataSourceParam], Set[String]())) { (ret, ds) =>
@@ -62,8 +67,11 @@ case class DQConfig(
       }
       ._1
   }
+
   def getEvaluateRule: EvaluateRuleParam = evaluateRule
+
   def getSinkNames: Seq[String] = sinks
+
   def getValidSinkTypes: Seq[SinkType] = SinkType.validSinkTypes(sinks)
 
   def validate(): Unit = {

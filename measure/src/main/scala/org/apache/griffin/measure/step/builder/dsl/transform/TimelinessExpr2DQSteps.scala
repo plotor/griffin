@@ -37,6 +37,8 @@ import org.apache.griffin.measure.utils.TimeUtil
 case class TimelinessExpr2DQSteps(context: DQContext, expr: Expr, ruleParam: RuleParam)
     extends Expr2DQSteps {
 
+  import TimelinessKeys._
+
   def getDQSteps: Seq[DQStep] = {
     val details = ruleParam.getDetails
     val timelinessExpr = expr.asInstanceOf[TimelinessClause]
