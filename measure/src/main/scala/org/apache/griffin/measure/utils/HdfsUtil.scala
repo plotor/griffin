@@ -17,15 +17,17 @@
 
 package org.apache.griffin.measure.utils
 
-import org.apache.hadoop.fs.{FSDataInputStream, FSDataOutputStream, Path}
-
 import org.apache.griffin.measure.Loggable
+import org.apache.hadoop.fs.{FSDataInputStream, FSDataOutputStream, Path}
 
 object HdfsUtil extends Loggable {
 
   private val seprator = "/"
 
-  private def getFS(implicit path: Path) = FSUtil.getFileSystem(path.toString)
+  def existFileInDir(dirPath: String, fileName: String): Boolean = {
+    val filePath = getHdfsFilePath(dirPath, fileName)
+    existPath(filePath)
+  }
 
   def existPath(filePath: String): Boolean = {
     try {
@@ -36,28 +38,16 @@ object HdfsUtil extends Loggable {
     }
   }
 
-  def existFileInDir(dirPath: String, fileName: String): Boolean = {
-    val filePath = getHdfsFilePath(dirPath, fileName)
-    existPath(filePath)
-  }
-
-  def createFile(filePath: String): FSDataOutputStream = {
-    implicit val path: Path = new Path(filePath)
-    if (getFS.exists(path)) getFS.delete(path, true)
-    getFS.create(path)
-  }
-
-  def appendOrCreateFile(filePath: String): FSDataOutputStream = {
-    implicit val path: Path = new Path(filePath)
-    if (getFS.getConf.getBoolean("dfs.support.append", false) && getFS.exists(path)) {
-      getFS.append(path)
-    } else createFile(filePath)
+  def getHdfsFilePath(parentPath: String, fileName: String): String = {
+    if (parentPath.endsWith(seprator)) parentPath + fileName else parentPath + seprator + fileName
   }
 
   def openFile(filePath: String): FSDataInputStream = {
     implicit val path: Path = new Path(filePath)
     getFS.open(path)
   }
+
+  private def getFS(implicit path: Path) = FSUtil.getFileSystem(path.toString)
 
   def writeContent(filePath: String, message: String): Unit = {
     val out = createFile(filePath)
@@ -78,13 +68,22 @@ object HdfsUtil extends Loggable {
     out.close()
   }
 
+  def appendOrCreateFile(filePath: String): FSDataOutputStream = {
+    implicit val path: Path = new Path(filePath)
+    if (getFS.getConf.getBoolean("dfs.support.append", false) && getFS.exists(path)) {
+      getFS.append(path)
+    } else createFile(filePath)
+  }
+
   def createEmptyFile(filePath: String): Unit = {
     val out = createFile(filePath)
     out.close()
   }
 
-  def getHdfsFilePath(parentPath: String, fileName: String): String = {
-    if (parentPath.endsWith(seprator)) parentPath + fileName else parentPath + seprator + fileName
+  def createFile(filePath: String): FSDataOutputStream = {
+    implicit val path: Path = new Path(filePath)
+    if (getFS.exists(path)) getFS.delete(path, true)
+    getFS.create(path)
   }
 
   def deleteHdfsPath(dirPath: String): Unit = {
@@ -93,6 +92,15 @@ object HdfsUtil extends Loggable {
       if (getFS.exists(path)) getFS.delete(path, true)
     } catch {
       case e: Throwable => error(s"delete path [$dirPath] error: ${e.getMessage}", e)
+    }
+  }
+
+  def listSubPathsByTypes(
+      dirPath: String,
+      subTypes: Iterable[String],
+      fullPath: Boolean = false): Iterable[String] = {
+    subTypes.flatMap { subType =>
+      listSubPathsByType(dirPath, subType, fullPath)
     }
   }
 
@@ -122,15 +130,6 @@ object HdfsUtil extends Loggable {
           Nil
       }
     } else Nil
-  }
-
-  def listSubPathsByTypes(
-      dirPath: String,
-      subTypes: Iterable[String],
-      fullPath: Boolean = false): Iterable[String] = {
-    subTypes.flatMap { subType =>
-      listSubPathsByType(dirPath, subType, fullPath)
-    }
   }
 
   def fileNameFromPath(filePath: String): String = {

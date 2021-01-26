@@ -18,7 +18,6 @@
 package org.apache.griffin.measure.step.builder.dsl.transform
 
 import org.apache.commons.lang.StringUtils
-
 import org.apache.griffin.measure.configuration.dqdefinition.{RuleErrorConfParam, RuleParam}
 import org.apache.griffin.measure.configuration.enums.FlattenType.DefaultFlattenType
 import org.apache.griffin.measure.configuration.enums.OutputType._
@@ -37,14 +36,6 @@ import org.apache.griffin.measure.utils.ParamUtil._
  */
 case class CompletenessExpr2DQSteps(context: DQContext, expr: Expr, ruleParam: RuleParam)
     extends Expr2DQSteps {
-
-  private object CompletenessKeys {
-    val _source = "source"
-    val _total = "total"
-    val _complete = "complete"
-    val _incomplete = "incomplete"
-  }
-  import CompletenessKeys._
 
   def getDQSteps: Seq[DQStep] = {
     val details = ruleParam.getDetails
@@ -239,5 +230,12 @@ case class CompletenessExpr2DQSteps(context: DQContext, expr: Expr, ruleParam: R
     }
     throw new IllegalArgumentException(
       "type in error.confs only supports regex and enumeration way")
+  }
+
+  private object CompletenessKeys {
+    val _source = "source"
+    val _total = "total"
+    val _complete = "complete"
+    val _incomplete = "incomplete"
   }
 }

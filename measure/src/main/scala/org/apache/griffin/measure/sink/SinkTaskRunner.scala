@@ -17,14 +17,13 @@
 
 package org.apache.griffin.measure.sink
 
+import org.apache.griffin.measure.Loggable
+
 import java.util.Date
 import java.util.concurrent.TimeUnit
-
 import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
-
-import org.apache.griffin.measure.Loggable
 
 /**
  * sink task runner, to sink metrics in block or non-block mode

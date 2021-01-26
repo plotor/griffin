@@ -51,12 +51,11 @@ case class TimelinessAnalyzer(expr: TimelinessClause, sourceName: String) extend
 //    (pr.desc, alias)
 //  }
 
-  private val exprs = expr.exprs.map(_.desc).toList
-
   val (btsExpr, etsExprOpt) = exprs match {
     case Nil => throw new Exception("timeliness analyzer error: ts column not set")
     case btsExpr :: Nil => (btsExpr, None)
     case btsExpr :: etsExpr :: _ => (btsExpr, Some(etsExpr))
   }
+  private val exprs = expr.exprs.map(_.desc).toList
 
 }

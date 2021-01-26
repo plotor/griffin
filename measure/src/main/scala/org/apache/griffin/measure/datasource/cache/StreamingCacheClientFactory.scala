@@ -17,24 +17,17 @@
 
 package org.apache.griffin.measure.datasource.cache
 
-import scala.util.matching.Regex
-
-import org.apache.spark.sql.SparkSession
-
 import org.apache.griffin.measure.Loggable
 import org.apache.griffin.measure.datasource.TimestampStorage
 import org.apache.griffin.measure.utils.ParamUtil._
+import org.apache.spark.sql.SparkSession
+
+import scala.util.matching.Regex
 
 object StreamingCacheClientFactory extends Loggable {
 
-  private object DataSourceCacheType {
-    val ParquetRegex: Regex = "^(?i)parq(uet)?$".r
-    val JsonRegex: Regex = "^(?i)json$".r
-    val OrcRegex: Regex = "^(?i)orc$".r
-  }
-  import DataSourceCacheType._
-
   val _type = "type"
+  import DataSourceCacheType._
 
   /**
    * create streaming cache client
@@ -71,6 +64,12 @@ object StreamingCacheClientFactory extends Loggable {
           None
       }
     }
+  }
+
+  private object DataSourceCacheType {
+    val ParquetRegex: Regex = "^(?i)parq(uet)?$".r
+    val JsonRegex: Regex = "^(?i)json$".r
+    val OrcRegex: Regex = "^(?i)orc$".r
   }
 
 }

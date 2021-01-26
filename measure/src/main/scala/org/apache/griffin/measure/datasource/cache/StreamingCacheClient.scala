@@ -17,22 +17,20 @@
 
 package org.apache.griffin.measure.datasource.cache
 
-import java.util.concurrent.TimeUnit
-
-import scala.collection.mutable
-import scala.util.Random
-
-import org.apache.spark.sql._
-
 import org.apache.griffin.measure.Loggable
 import org.apache.griffin.measure.context.TimeRange
 import org.apache.griffin.measure.context.streaming.checkpoint.lock.CheckpointLock
 import org.apache.griffin.measure.context.streaming.checkpoint.offset.OffsetCheckpointClient
 import org.apache.griffin.measure.datasource.TimestampStorage
 import org.apache.griffin.measure.step.builder.ConstantColumns
-import org.apache.griffin.measure.utils.{HdfsUtil, TimeUtil}
 import org.apache.griffin.measure.utils.DataFrameUtil._
 import org.apache.griffin.measure.utils.ParamUtil._
+import org.apache.griffin.measure.utils.{HdfsUtil, TimeUtil}
+import org.apache.spark.sql._
+
+import java.util.concurrent.TimeUnit
+import scala.collection.mutable
+import scala.util.Random
 
 /**
  * data source cache in streaming mode
@@ -52,69 +50,29 @@ trait StreamingCacheClient
   val index: Int
 
   val timestampStorage: TimestampStorage
-  protected def fromUntilRangeTmsts(from: Long, until: Long): Set[Long] =
-    timestampStorage.fromUntil(from, until)
-
-  protected def clearTmst(t: Long): mutable.SortedSet[Long] = timestampStorage.remove(t)
-  protected def clearTmstsUntil(until: Long): mutable.SortedSet[Long] = {
-    val outDateTmsts = timestampStorage.until(until)
-    timestampStorage.remove(outDateTmsts)
-  }
-  protected def afterTilRangeTmsts(after: Long, til: Long): Set[Long] =
-    fromUntilRangeTmsts(after + 1, til + 1)
-  protected def clearTmstsTil(til: Long): mutable.SortedSet[Long] = clearTmstsUntil(til + 1)
-
   val _FilePath = "file.path"
   val _InfoPath = "info.path"
   val _ReadyTimeInterval = "ready.time.interval"
   val _ReadyTimeDelay = "ready.time.delay"
   val _TimeRange = "time.range"
-
   val rdmStr: String = Random.alphanumeric.take(10).mkString
   val defFilePath = s"hdfs:///griffin/cache/${dsName}_$rdmStr"
   val defInfoPath = s"$index"
-
   val filePath: String = param.getString(_FilePath, defFilePath)
   val cacheInfoPath: String = param.getString(_InfoPath, defInfoPath)
   val readyTimeInterval: Long =
     TimeUtil.milliseconds(param.getString(_ReadyTimeInterval, "1m")).getOrElse(60000L)
-
   val readyTimeDelay: Long =
     TimeUtil.milliseconds(param.getString(_ReadyTimeDelay, "1m")).getOrElse(60000L)
-
-  def deltaTimeRange[T <: Seq[String]: Manifest]: (Long, Long) = {
-    def negative(n: Long): Long = if (n <= 0) n else 0
-    param.get(_TimeRange) match {
-      case Some(seq: T) =>
-        val nseq = seq.flatMap(TimeUtil.milliseconds)
-        val ns = negative(nseq.headOption.getOrElse(0))
-        val ne = negative(nseq.tail.headOption.getOrElse(0))
-        (ns, ne)
-      case _ => (0, 0)
-    }
-  }
-
   val _ReadOnly = "read.only"
   val readOnly: Boolean = param.getBoolean(_ReadOnly, defValue = false)
-
   val _Updatable = "updatable"
   val updatable: Boolean = param.getBoolean(_Updatable, defValue = false)
-
   val newCacheLock: CheckpointLock = OffsetCheckpointClient.genLock(s"$cacheInfoPath.new")
   val oldCacheLock: CheckpointLock = OffsetCheckpointClient.genLock(s"$cacheInfoPath.old")
-
   val newFilePath = s"$filePath/new"
   val oldFilePath = s"$filePath/old"
-
   val defOldCacheIndex = 0L
-
-  protected def writeDataFrame(dfw: DataFrameWriter[Row], path: String): Unit
-  protected def readDataFrame(dfr: DataFrameReader, path: String): DataFrame
-
-  private def readDataFrameOpt(dfr: DataFrameReader, path: String): Option[DataFrame] = {
-    val df = readDataFrame(dfr, path)
-    if (df.count() > 0) Some(df) else None
-  }
 
   /**
    * save data frame in dump phase
@@ -218,46 +176,26 @@ trait StreamingCacheClient
     (cacheDfOpt, retTimeRange)
   }
 
-  private def cleanOutTimePartitions(
-      path: String,
-      outTime: Long,
-      partitionOpt: Option[String],
-      func: (Long, Long) => Boolean): Unit = {
-    val earlierOrEqPaths = listPartitionsByFunc(path: String, outTime, partitionOpt, func)
-    // delete out time data path
-    earlierOrEqPaths.foreach { path =>
-      info(s"delete hdfs path: $path")
-      HdfsUtil.deleteHdfsPath(path)
-    }
+  protected def afterTilRangeTmsts(after: Long, til: Long): Set[Long] =
+    fromUntilRangeTmsts(after + 1, til + 1)
+
+  protected def fromUntilRangeTmsts(from: Long, until: Long): Set[Long] =
+    timestampStorage.fromUntil(from, until)
+
+  private def readDataFrameOpt(dfr: DataFrameReader, path: String): Option[DataFrame] = {
+    val df = readDataFrame(dfr, path)
+    if (df.count() > 0) Some(df) else None
   }
-  private def listPartitionsByFunc(
-      path: String,
-      bound: Long,
-      partitionOpt: Option[String],
-      func: (Long, Long) => Boolean): Iterable[String] = {
-    val names = HdfsUtil.listSubPathsByType(path, "dir")
-    val regex = partitionOpt match {
-      case Some(partition) => s"^$partition=(\\d+)$$".r
-      case _ => "^(\\d+)$".r
-    }
-    names
-      .filter { name =>
-        name match {
-          case regex(value) =>
-            str2Long(value) match {
-              case Some(t) => func(t, bound)
-              case _ => false
-            }
-          case _ => false
-        }
-      }
-      .map(name => s"$path/$name")
-  }
-  private def str2Long(str: String): Option[Long] = {
-    try {
-      Some(str.toLong)
-    } catch {
-      case _: Throwable => None
+
+  def deltaTimeRange[T <: Seq[String]: Manifest]: (Long, Long) = {
+    def negative(n: Long): Long = if (n <= 0) n else 0
+    param.get(_TimeRange) match {
+      case Some(seq: T) =>
+        val nseq = seq.flatMap(TimeUtil.milliseconds)
+        val ns = negative(nseq.headOption.getOrElse(0))
+        val ne = negative(nseq.tail.headOption.getOrElse(0))
+        (ns, ne)
+      case _ => (0, 0)
     }
   }
 
@@ -321,6 +259,58 @@ trait StreamingCacheClient
     }
   }
 
+  protected def clearTmstsTil(til: Long): mutable.SortedSet[Long] = clearTmstsUntil(til + 1)
+
+  protected def clearTmstsUntil(until: Long): mutable.SortedSet[Long] = {
+    val outDateTmsts = timestampStorage.until(until)
+    timestampStorage.remove(outDateTmsts)
+  }
+
+  private def cleanOutTimePartitions(
+      path: String,
+      outTime: Long,
+      partitionOpt: Option[String],
+      func: (Long, Long) => Boolean): Unit = {
+    val earlierOrEqPaths = listPartitionsByFunc(path: String, outTime, partitionOpt, func)
+    // delete out time data path
+    earlierOrEqPaths.foreach { path =>
+      info(s"delete hdfs path: $path")
+      HdfsUtil.deleteHdfsPath(path)
+    }
+  }
+
+  private def listPartitionsByFunc(
+      path: String,
+      bound: Long,
+      partitionOpt: Option[String],
+      func: (Long, Long) => Boolean): Iterable[String] = {
+    val names = HdfsUtil.listSubPathsByType(path, "dir")
+    val regex = partitionOpt match {
+      case Some(partition) => s"^$partition=(\\d+)$$".r
+      case _ => "^(\\d+)$".r
+    }
+    names
+      .filter { name =>
+        name match {
+          case regex(value) =>
+            str2Long(value) match {
+              case Some(t) => func(t, bound)
+              case _ => false
+            }
+          case _ => false
+        }
+      }
+      .map(name => s"$path/$name")
+  }
+
+  private def str2Long(str: String): Option[Long] = {
+    try {
+      Some(str.toLong)
+    } catch {
+      case _: Throwable => None
+    }
+  }
+
   /**
    * update old cached data by new data frame
    * @param dfOpt    data frame to update old cached data
@@ -360,6 +350,13 @@ trait StreamingCacheClient
     }
   }
 
+  // read next clean time
+  private def getNextCleanTime: Long = {
+    val timeRange = OffsetCheckpointClient.getTimeRange
+    val nextCleanTime = timeRange._2 + deltaTimeRange._1
+    nextCleanTime
+  }
+
   /**
    * each time calculation phase finishes,
    * data source cache needs to submit some cache information
@@ -374,11 +371,10 @@ trait StreamingCacheClient
     submitCleanTime(nextCleanTime)
   }
 
-  // read next clean time
-  private def getNextCleanTime: Long = {
-    val timeRange = OffsetCheckpointClient.getTimeRange
-    val nextCleanTime = timeRange._2 + deltaTimeRange._1
-    nextCleanTime
-  }
+  protected def clearTmst(t: Long): mutable.SortedSet[Long] = timestampStorage.remove(t)
+
+  protected def writeDataFrame(dfw: DataFrameWriter[Row], path: String): Unit
+
+  protected def readDataFrame(dfr: DataFrameReader, path: String): DataFrame
 
 }

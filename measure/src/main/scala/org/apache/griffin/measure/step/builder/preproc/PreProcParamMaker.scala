@@ -25,8 +25,6 @@ import org.apache.griffin.measure.configuration.enums.DslType._
  */
 object PreProcParamMaker {
 
-  case class StringAnyMap(values: Map[String, Any])
-
   def makePreProcRules(
       rules: Seq[RuleParam],
       suffix: String,
@@ -56,8 +54,6 @@ object PreProcParamMaker {
     }
   }
 
-  private def genNameWithIndex(name: String, i: Int): String = s"$name$i"
-
   private def replaceDfNameSuffix(str: String, dfName: String, suffix: String): String = {
     val regexStr = s"(?i)$dfName"
     val replaceDfName = withSuffix(dfName, suffix)
@@ -65,5 +61,9 @@ object PreProcParamMaker {
   }
 
   def withSuffix(str: String, suffix: String): String = s"${str}_$suffix"
+
+  private def genNameWithIndex(name: String, i: Int): String = s"$name$i"
+
+  case class StringAnyMap(values: Map[String, Any])
 
 }

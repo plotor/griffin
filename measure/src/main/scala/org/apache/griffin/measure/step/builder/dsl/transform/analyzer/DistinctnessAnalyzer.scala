@@ -30,14 +30,14 @@ case class DistinctnessAnalyzer(expr: DistinctnessClause, sourceName: String)
   }
   val combAlias: (Seq[String], Seq[String]) => Seq[String] = (a: Seq[String], b: Seq[String]) =>
     a ++ b
-
-  private val exprs = expr.exprs
-  private def genAlias(idx: Int): String = s"alias_$idx"
   val selectionPairs: Seq[(Expr, String, Boolean)] = exprs.zipWithIndex.map { pair =>
     val (pr, idx) = pair
     val res = pr.preOrderTraverseDepthFirst(Seq[String]())(seqAlias, combAlias)
     (pr, res.headOption.getOrElse(genAlias(idx)), pr.tag.isEmpty)
   }
+  private val exprs = expr.exprs
+
+  private def genAlias(idx: Int): String = s"alias_$idx"
 
   if (selectionPairs.isEmpty) {
     throw new Exception("uniqueness analyzer error: empty selection")

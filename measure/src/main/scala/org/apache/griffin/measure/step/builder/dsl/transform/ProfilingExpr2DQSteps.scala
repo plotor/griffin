@@ -18,7 +18,6 @@
 package org.apache.griffin.measure.step.builder.dsl.transform
 
 import org.apache.commons.lang.StringUtils
-
 import org.apache.griffin.measure.configuration.dqdefinition.RuleParam
 import org.apache.griffin.measure.configuration.enums.FlattenType.DefaultFlattenType
 import org.apache.griffin.measure.configuration.enums.OutputType._
@@ -37,11 +36,6 @@ import org.apache.griffin.measure.utils.ParamUtil._
  */
 case class ProfilingExpr2DQSteps(context: DQContext, expr: Expr, ruleParam: RuleParam)
     extends Expr2DQSteps {
-
-  private object ProfilingKeys {
-    val _source = "source"
-  }
-  import ProfilingKeys._
 
   def getDQSteps: Seq[DQStep] = {
     val details = ruleParam.getDetails
@@ -110,6 +104,10 @@ case class ProfilingExpr2DQSteps(context: DQContext, expr: Expr, ruleParam: Rule
           Some(profilingMetricWriteStep))
       profilingTransStep :: Nil
     }
+  }
+
+  private object ProfilingKeys {
+    val _source = "source"
   }
 
 }

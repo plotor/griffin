@@ -17,9 +17,9 @@
 
 package org.apache.griffin.measure.context.streaming.metric
 
-import scala.collection.mutable.{Map => MutableMap}
-
 import org.apache.griffin.measure.Loggable
+
+import scala.collection.mutable.{Map => MutableMap}
 
 /**
  * in streaming mode, some metrics may update,
@@ -27,23 +27,7 @@ import org.apache.griffin.measure.Loggable
  */
 object CacheResults extends Loggable {
 
-  case class CacheResult(timeStamp: Long, updateTime: Long, result: Metric) {
-    def olderThan(ut: Long): Boolean = updateTime < ut
-    def update[A <: result.T: Manifest](ut: Long, r: Metric): Option[Metric] = {
-      r match {
-        case m: A if olderThan(ut) =>
-          val ur = result.update(m)
-          Some(ur).filter(result.differsFrom)
-        case _ => None
-      }
-    }
-  }
-
   private val cacheGroup: MutableMap[Long, CacheResult] = MutableMap()
-
-  private def update(r: CacheResult): Unit = {
-    cacheGroup += (r.timeStamp -> r)
-  }
 
   /**
    * input new metric results, output the updated metric results.
@@ -60,6 +44,10 @@ object CacheResults extends Loggable {
     updatedCacheResults
   }
 
+  private def update(r: CacheResult): Unit = {
+    cacheGroup += (r.timeStamp -> r)
+  }
+
   /**
    * clean the out-time cached results, to avoid memory leak
    */
@@ -71,6 +59,19 @@ object CacheResults extends Loggable {
     }
     info(s"=== dead cache group count: ${deadCache.size} ===")
     deadCache.keySet.foreach(cacheGroup -= _)
+  }
+
+  case class CacheResult(timeStamp: Long, updateTime: Long, result: Metric) {
+    def update[A <: result.T: Manifest](ut: Long, r: Metric): Option[Metric] = {
+      r match {
+        case m: A if olderThan(ut) =>
+          val ur = result.update(m)
+          Some(ur).filter(result.differsFrom)
+        case _ => None
+      }
+    }
+
+    def olderThan(ut: Long): Boolean = updateTime < ut
   }
 
 }

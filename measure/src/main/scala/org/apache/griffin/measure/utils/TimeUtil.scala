@@ -17,33 +17,16 @@
 
 package org.apache.griffin.measure.utils
 
-import scala.util.{Failure, Success, Try}
-import scala.util.matching.Regex
-
 import org.apache.griffin.measure.Loggable
+
+import scala.util.matching.Regex
+import scala.util.{Failure, Success, Try}
 
 object TimeUtil extends Loggable {
 
-  private object Units {
-    case class TimeUnit(name: String, shortName: String, ut: Long, regex: Regex) {
-      def toMs(t: Long): Long = t * ut
-      def fromMs(ms: Long): Long = ms / ut
-      def fitUnit(ms: Long): Boolean = ms % ut == 0
-    }
-
-    val dayUnit: TimeUnit = TimeUnit("day", "d", 24 * 60 * 60 * 1000, """^(?i)d(?:ay)?$""".r)
-    val hourUnit: TimeUnit = TimeUnit("hour", "h", 60 * 60 * 1000, """^(?i)h(?:our|r)?$""".r)
-    val minUnit: TimeUnit = TimeUnit("minute", "m", 60 * 1000, """^(?i)m(?:in(?:ute)?)?$""".r)
-    val secUnit: TimeUnit = TimeUnit("second", "s", 1000, """^(?i)s(?:ec(?:ond)?)?$""".r)
-    val msUnit: TimeUnit =
-      TimeUnit("millisecond", "ms", 1, """^(?i)m(?:illi)?s(?:ec(?:ond)?)?$""".r)
-
-    val timeUnits: List[TimeUnit] = dayUnit :: hourUnit :: minUnit :: secUnit :: msUnit :: Nil
-  }
-  import Units._
-
 //  final val TimeRegex = """^([+\-]?\d+)(ms|s|m|h|d)$""".r
   final val TimeRegex = """^([+\-]?\d+)([a-zA-Z]+)$""".r
+  import Units._
   final val PureTimeRegex = """^([+\-]?\d+)$""".r
 
   def milliseconds(timeString: String): Option[Long] = {
@@ -103,6 +86,22 @@ object TimeUtil extends Loggable {
     val unitTime = unit.fromMs(t)
     val unitStr = unit.shortName
     s"$unitTime$unitStr"
+  }
+
+  private object Units {
+    val dayUnit: TimeUnit = TimeUnit("day", "d", 24 * 60 * 60 * 1000, """^(?i)d(?:ay)?$""".r)
+    val hourUnit: TimeUnit = TimeUnit("hour", "h", 60 * 60 * 1000, """^(?i)h(?:our|r)?$""".r)
+    val minUnit: TimeUnit = TimeUnit("minute", "m", 60 * 1000, """^(?i)m(?:in(?:ute)?)?$""".r)
+    val secUnit: TimeUnit = TimeUnit("second", "s", 1000, """^(?i)s(?:ec(?:ond)?)?$""".r)
+    val msUnit: TimeUnit =
+      TimeUnit("millisecond", "ms", 1, """^(?i)m(?:illi)?s(?:ec(?:ond)?)?$""".r)
+    val timeUnits: List[TimeUnit] = dayUnit :: hourUnit :: minUnit :: secUnit :: msUnit :: Nil
+
+    case class TimeUnit(name: String, shortName: String, ut: Long, regex: Regex) {
+      def toMs(t: Long): Long = t * ut
+      def fromMs(ms: Long): Long = ms / ut
+      def fitUnit(ms: Long): Boolean = ms % ut == 0
+    }
   }
 
 }

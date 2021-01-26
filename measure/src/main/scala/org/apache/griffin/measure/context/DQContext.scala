@@ -17,13 +17,12 @@
 
 package org.apache.griffin.measure.context
 
-import org.apache.spark.sql.{Encoder, Encoders, SparkSession}
-
 import org.apache.griffin.measure.configuration.dqdefinition._
 import org.apache.griffin.measure.configuration.enums.ProcessType._
 import org.apache.griffin.measure.configuration.enums.WriteMode
 import org.apache.griffin.measure.datasource._
 import org.apache.griffin.measure.sink.{Sink, SinkFactory}
+import org.apache.spark.sql.{Encoder, Encoders, SparkSession}
 
 /**
  * dq context: the context of each calculation
@@ -58,26 +57,24 @@ case class DQContext(
     }
   }
   dataSourceNames.foreach(name => compileTableRegister.registerTable(name))
+  val functionNames: Seq[String] = sparkSession.catalog.listFunctions.map(_.name).collect.toSeq
+
+  implicit val encoder: Encoder[String] = Encoders.STRING
+  val dataSourceTimeRanges: Map[String, TimeRange] = loadDataSources()
+  private val sinkFactory = SinkFactory(sinkParams, name)
+  private val defaultSinks: Seq[Sink] = createSinks(contextId.timestamp)
+
+  printTimeRanges()
 
   def getDataSourceName(index: Int): String = {
     if (dataSourceNames.size > index) dataSourceNames(index) else ""
   }
-
-  implicit val encoder: Encoder[String] = Encoders.STRING
-  val functionNames: Seq[String] = sparkSession.catalog.listFunctions.map(_.name).collect.toSeq
-
-  val dataSourceTimeRanges: Map[String, TimeRange] = loadDataSources()
 
   def loadDataSources(): Map[String, TimeRange] = {
     dataSources.map { ds =>
       (ds.name, ds.loadData(this))
     }.toMap
   }
-
-  printTimeRanges()
-
-  private val sinkFactory = SinkFactory(sinkParams, name)
-  private val defaultSinks: Seq[Sink] = createSinks(contextId.timestamp)
 
   def getSinks(timestamp: Long): Seq[Sink] = {
     if (timestamp == contextId.timestamp) getSinks

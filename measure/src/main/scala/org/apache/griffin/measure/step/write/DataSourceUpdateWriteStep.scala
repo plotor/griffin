@@ -18,10 +18,10 @@
 package org.apache.griffin.measure.step.write
 
 import org.apache.commons.lang.StringUtils
-import org.apache.spark.sql.DataFrame
-import scala.util.Try
-
 import org.apache.griffin.measure.context.DQContext
+import org.apache.spark.sql.DataFrame
+
+import scala.util.Try
 
 /**
  * update data source streaming cache
@@ -43,6 +43,9 @@ case class DataSourceUpdateWriteStep(dsName: String, inputName: String) extends 
     true
   }
 
+  private def getDataSourceCacheUpdateDf(context: DQContext): Option[DataFrame] =
+    getDataFrame(context, inputName)
+
   private def getDataFrame(context: DQContext, name: String): Option[DataFrame] = {
     try {
       val df = context.sparkSession.table(s"`$name`")
@@ -53,8 +56,5 @@ case class DataSourceUpdateWriteStep(dsName: String, inputName: String) extends 
         None
     }
   }
-
-  private def getDataSourceCacheUpdateDf(context: DQContext): Option[DataFrame] =
-    getDataFrame(context, inputName)
 
 }

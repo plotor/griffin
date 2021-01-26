@@ -24,35 +24,24 @@ trait OffsetOps extends Serializable { this: OffsetCheckpoint =>
   val ReadyTime = "ready.time"
   val CleanTime = "clean.time"
   val OldCacheIndex = "old.cache.index"
-
-  def cacheTime(path: String): String = s"$path/$CacheTime"
-  def lastProcTime(path: String): String = s"$path/$LastProcTime"
-  def readyTime(path: String): String = s"$path/$ReadyTime"
-  def cleanTime(path: String): String = s"$path/$CleanTime"
-  def oldCacheIndex(path: String): String = s"$path/$OldCacheIndex"
-
   val infoPath = "info"
-
   val finalCacheInfoPath = "info.final"
   val finalReadyTime = s"$finalCacheInfoPath/$ReadyTime"
   val finalLastProcTime = s"$finalCacheInfoPath/$LastProcTime"
   val finalCleanTime = s"$finalCacheInfoPath/$CleanTime"
 
+  def cacheTime(path: String): String = s"$path/$CacheTime"
+
+  def lastProcTime(path: String): String = s"$path/$LastProcTime"
+
+  def readyTime(path: String): String = s"$path/$ReadyTime"
+
+  def cleanTime(path: String): String = s"$path/$CleanTime"
+
+  def oldCacheIndex(path: String): String = s"$path/$OldCacheIndex"
+
   def startOffsetCheckpoint(): Unit = {
     genFinalReadyTime()
-  }
-
-  def getTimeRange: (Long, Long) = {
-    readTimeRange()
-  }
-
-  def getCleanTime: Long = {
-    readCleanTime()
-  }
-
-  def endOffsetCheckpoint(): Unit = {
-    genFinalLastProcTime()
-    genFinalCleanTime()
   }
 
   private def genFinalReadyTime(): Unit = {
@@ -71,6 +60,36 @@ trait OffsetOps extends Serializable { this: OffsetCheckpoint =>
     }
   }
 
+  def getTimeRange: (Long, Long) = {
+    readTimeRange()
+  }
+
+  private def readTimeRange(): (Long, Long) = {
+    val map = read(List(finalLastProcTime, finalReadyTime))
+    val lastProcTime = getLong(map, finalLastProcTime)
+    val curReadyTime = getLong(map, finalReadyTime)
+    (lastProcTime, curReadyTime)
+  }
+
+  def getCleanTime: Long = {
+    readCleanTime()
+  }
+
+  private def readCleanTime(): Long = {
+    val map = read(List(finalCleanTime))
+    val cleanTime = getLong(map, finalCleanTime)
+    cleanTime
+  }
+
+  private def getLong(map: Map[String, String], key: String) = {
+    getLongOpt(map, key).getOrElse(-1L)
+  }
+
+  def endOffsetCheckpoint(): Unit = {
+    genFinalLastProcTime()
+    genFinalCleanTime()
+  }
+
   private def genFinalLastProcTime(): Unit = {
     val subPath = listKeys(infoPath)
     val keys = subPath.map { p =>
@@ -84,6 +103,14 @@ trait OffsetOps extends Serializable { this: OffsetCheckpoint =>
       val time = times.min
       val map = Map[String, String](finalLastProcTime -> time.toString)
       cache(map)
+    }
+  }
+
+  private def getLongOpt(map: Map[String, String], key: String): Option[Long] = {
+    try {
+      map.get(key).map(_.toLong)
+    } catch {
+      case _: Throwable => None
     }
   }
 
@@ -101,30 +128,6 @@ trait OffsetOps extends Serializable { this: OffsetCheckpoint =>
       val map = Map[String, String](finalCleanTime -> time.toString)
       cache(map)
     }
-  }
-
-  private def readTimeRange(): (Long, Long) = {
-    val map = read(List(finalLastProcTime, finalReadyTime))
-    val lastProcTime = getLong(map, finalLastProcTime)
-    val curReadyTime = getLong(map, finalReadyTime)
-    (lastProcTime, curReadyTime)
-  }
-
-  private def readCleanTime(): Long = {
-    val map = read(List(finalCleanTime))
-    val cleanTime = getLong(map, finalCleanTime)
-    cleanTime
-  }
-
-  private def getLongOpt(map: Map[String, String], key: String): Option[Long] = {
-    try {
-      map.get(key).map(_.toLong)
-    } catch {
-      case _: Throwable => None
-    }
-  }
-  private def getLong(map: Map[String, String], key: String) = {
-    getLongOpt(map, key).getOrElse(-1L)
   }
 
 }

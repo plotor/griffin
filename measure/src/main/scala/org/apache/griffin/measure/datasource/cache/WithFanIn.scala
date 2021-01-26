@@ -18,8 +18,7 @@
 package org.apache.griffin.measure.datasource.cache
 
 import java.util.concurrent.atomic.AtomicInteger
-
-import scala.collection.concurrent.{Map => ConcMap, TrieMap}
+import scala.collection.concurrent.{TrieMap, Map => ConcMap}
 
 /**
  * fan in trait, for multiple input and one output

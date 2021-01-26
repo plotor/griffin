@@ -17,9 +17,9 @@
 
 package org.apache.griffin.measure.step
 
-import scala.util.{Failure, Success, Try}
-
 import org.apache.griffin.measure.context.DQContext
+
+import scala.util.{Failure, Success, Try}
 
 /**
  * sequence of dq steps

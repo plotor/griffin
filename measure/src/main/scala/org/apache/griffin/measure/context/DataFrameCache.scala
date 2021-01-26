@@ -17,11 +17,10 @@
 
 package org.apache.griffin.measure.context
 
-import scala.collection.mutable
-
+import org.apache.griffin.measure.Loggable
 import org.apache.spark.sql.DataFrame
 
-import org.apache.griffin.measure.Loggable
+import scala.collection.mutable
 
 /**
  * cache and unpersist dataframes
@@ -30,13 +29,6 @@ case class DataFrameCache() extends Loggable {
 
   val dataFrames: mutable.Map[String, DataFrame] = mutable.Map()
   val trashDataFrames: mutable.MutableList[DataFrame] = mutable.MutableList()
-
-  private def trashDataFrame(df: DataFrame): Unit = {
-    trashDataFrames += df
-  }
-  private def trashDataFrames(dfs: Seq[DataFrame]): Unit = {
-    trashDataFrames ++= dfs
-  }
 
   def cacheDataFrame(name: String, df: DataFrame): Unit = {
     info(s"try to cache data frame $name")
@@ -53,13 +45,22 @@ case class DataFrameCache() extends Loggable {
     }
   }
 
+  private def trashDataFrame(df: DataFrame): Unit = {
+    trashDataFrames += df
+  }
+
   def uncacheDataFrame(name: String): Unit = {
     dataFrames.get(name).foreach(df => trashDataFrame(df))
     dataFrames -= name
   }
+
   def uncacheAllDataFrames(): Unit = {
     trashDataFrames(dataFrames.values.toSeq)
     dataFrames.clear
+  }
+
+  private def trashDataFrames(dfs: Seq[DataFrame]): Unit = {
+    trashDataFrames ++= dfs
   }
 
   def clearAllTrashDataFrames(): Unit = {

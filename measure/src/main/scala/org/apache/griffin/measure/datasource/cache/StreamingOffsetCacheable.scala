@@ -29,18 +29,16 @@ trait StreamingOffsetCacheable extends Loggable with Serializable {
   val readyTimeInterval: Long
   val readyTimeDelay: Long
 
-  def selfCacheInfoPath: String = s"${OffsetCheckpointClient.infoPath}/$cacheInfoPath"
-
-  def selfCacheTime: String = OffsetCheckpointClient.cacheTime(selfCacheInfoPath)
-  def selfLastProcTime: String = OffsetCheckpointClient.lastProcTime(selfCacheInfoPath)
-  def selfReadyTime: String = OffsetCheckpointClient.readyTime(selfCacheInfoPath)
-  def selfCleanTime: String = OffsetCheckpointClient.cleanTime(selfCacheInfoPath)
-  def selfOldCacheIndex: String = OffsetCheckpointClient.oldCacheIndex(selfCacheInfoPath)
+  def readOldCacheIndex(): Option[Long] = readSelfInfo(selfOldCacheIndex)
 
   protected def submitCacheTime(ms: Long): Unit = {
     val map = Map[String, String](selfCacheTime -> ms.toString)
     OffsetCheckpointClient.cache(map)
   }
+
+  def selfCacheTime: String = OffsetCheckpointClient.cacheTime(selfCacheInfoPath)
+
+  def selfCacheInfoPath: String = s"${OffsetCheckpointClient.infoPath}/$cacheInfoPath"
 
   protected def submitReadyTime(ms: Long): Unit = {
     val curReadyTime = ms - readyTimeDelay
@@ -50,6 +48,8 @@ trait StreamingOffsetCacheable extends Loggable with Serializable {
     }
   }
 
+  def selfReadyTime: String = OffsetCheckpointClient.readyTime(selfCacheInfoPath)
+
   protected def submitLastProcTime(ms: Long): Unit = {
     val map = Map[String, String](selfLastProcTime -> ms.toString)
     OffsetCheckpointClient.cache(map)
@@ -57,22 +57,7 @@ trait StreamingOffsetCacheable extends Loggable with Serializable {
 
   protected def readLastProcTime(): Option[Long] = readSelfInfo(selfLastProcTime)
 
-  protected def submitCleanTime(ms: Long): Unit = {
-    val cleanTime = genCleanTime(ms)
-    val map = Map[String, String](selfCleanTime -> cleanTime.toString)
-    OffsetCheckpointClient.cache(map)
-  }
-
-  protected def genCleanTime(ms: Long): Long = ms
-
-  protected def readCleanTime(): Option[Long] = readSelfInfo(selfCleanTime)
-
-  protected def submitOldCacheIndex(index: Long): Unit = {
-    val map = Map[String, String](selfOldCacheIndex -> index.toString)
-    OffsetCheckpointClient.cache(map)
-  }
-
-  def readOldCacheIndex(): Option[Long] = readSelfInfo(selfOldCacheIndex)
+  def selfLastProcTime: String = OffsetCheckpointClient.lastProcTime(selfCacheInfoPath)
 
   private def readSelfInfo(key: String): Option[Long] = {
     OffsetCheckpointClient.read(key :: Nil).get(key).flatMap { v =>
@@ -85,5 +70,24 @@ trait StreamingOffsetCacheable extends Loggable with Serializable {
       }
     }
   }
+
+  protected def submitCleanTime(ms: Long): Unit = {
+    val cleanTime = genCleanTime(ms)
+    val map = Map[String, String](selfCleanTime -> cleanTime.toString)
+    OffsetCheckpointClient.cache(map)
+  }
+
+  protected def genCleanTime(ms: Long): Long = ms
+
+  protected def readCleanTime(): Option[Long] = readSelfInfo(selfCleanTime)
+
+  def selfCleanTime: String = OffsetCheckpointClient.cleanTime(selfCacheInfoPath)
+
+  protected def submitOldCacheIndex(index: Long): Unit = {
+    val map = Map[String, String](selfOldCacheIndex -> index.toString)
+    OffsetCheckpointClient.cache(map)
+  }
+
+  def selfOldCacheIndex: String = OffsetCheckpointClient.oldCacheIndex(selfCacheInfoPath)
 
 }

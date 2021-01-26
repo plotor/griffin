@@ -17,9 +17,9 @@
 
 package org.apache.griffin.measure.context.streaming.checkpoint.lock
 
-import java.util.concurrent.TimeUnit
-
 import org.apache.griffin.measure.Loggable
+
+import java.util.concurrent.TimeUnit
 
 /**
  * lock for checkpoint

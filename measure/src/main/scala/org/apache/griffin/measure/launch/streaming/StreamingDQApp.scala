@@ -17,15 +17,6 @@
 
 package org.apache.griffin.measure.launch.streaming
 
-import java.util.{Date, Timer, TimerTask}
-import java.util.concurrent.{Executors, ThreadPoolExecutor, TimeUnit}
-
-import scala.util.Try
-
-import org.apache.spark.SparkConf
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.streaming.{Milliseconds, StreamingContext}
-
 import org.apache.griffin.measure.Loggable
 import org.apache.griffin.measure.configuration.dqdefinition._
 import org.apache.griffin.measure.configuration.enums.ProcessType.StreamingProcessType
@@ -40,6 +31,13 @@ import org.apache.griffin.measure.launch.DQApp
 import org.apache.griffin.measure.sink.Sink
 import org.apache.griffin.measure.step.builder.udf.GriffinUDFAgent
 import org.apache.griffin.measure.utils.{HdfsUtil, TimeUtil}
+import org.apache.spark.SparkConf
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.streaming.{Milliseconds, StreamingContext}
+
+import java.util.concurrent.{Executors, ThreadPoolExecutor, TimeUnit}
+import java.util.{Date, Timer, TimerTask}
+import scala.util.Try
 
 case class StreamingDQApp(allParam: GriffinConfig) extends DQApp {
 
@@ -71,6 +69,14 @@ case class StreamingDQApp(allParam: GriffinConfig) extends DQApp {
 
     // register udf
     GriffinUDFAgent.register(sparkSession)
+  }
+
+  private def clearCpDir(): Unit = {
+    if (sparkParam.needInitClear) {
+      val cpDir = sparkParam.getCpDir
+      info(s"clear checkpoint directory $cpDir")
+      HdfsUtil.deleteHdfsPath(cpDir)
+    }
   }
 
   def run: Try[Boolean] = Try {
@@ -126,11 +132,6 @@ case class StreamingDQApp(allParam: GriffinConfig) extends DQApp {
     true
   }
 
-  def close: Try[_] = Try {
-    sparkSession.close()
-    sparkSession.stop()
-  }
-
   def createStreamingContext: StreamingContext = {
     val batchInterval = TimeUtil.milliseconds(sparkParam.getBatchInterval) match {
       case Some(interval) => Milliseconds(interval)
@@ -142,12 +143,9 @@ case class StreamingDQApp(allParam: GriffinConfig) extends DQApp {
     ssc
   }
 
-  private def clearCpDir(): Unit = {
-    if (sparkParam.needInitClear) {
-      val cpDir = sparkParam.getCpDir
-      info(s"clear checkpoint directory $cpDir")
-      HdfsUtil.deleteHdfsPath(cpDir)
-    }
+  def close: Try[_] = Try {
+    sparkSession.close()
+    sparkSession.stop()
   }
 
   /**

@@ -18,10 +18,7 @@
 package org.apache.griffin.measure.step.builder.dsl.transform
 
 import org.apache.griffin.measure.configuration.dqdefinition.RuleParam
-import org.apache.griffin.measure.configuration.enums.FlattenType.{
-  ArrayFlattenType,
-  EntriesFlattenType
-}
+import org.apache.griffin.measure.configuration.enums.FlattenType.{ArrayFlattenType, EntriesFlattenType}
 import org.apache.griffin.measure.configuration.enums.OutputType._
 import org.apache.griffin.measure.configuration.enums.ProcessType._
 import org.apache.griffin.measure.context.DQContext
@@ -30,11 +27,7 @@ import org.apache.griffin.measure.step.builder.ConstantColumns
 import org.apache.griffin.measure.step.builder.dsl.expr.{DistinctnessClause, _}
 import org.apache.griffin.measure.step.builder.dsl.transform.analyzer.DistinctnessAnalyzer
 import org.apache.griffin.measure.step.transform.SparkSqlTransformStep
-import org.apache.griffin.measure.step.write.{
-  DataSourceUpdateWriteStep,
-  MetricWriteStep,
-  RecordWriteStep
-}
+import org.apache.griffin.measure.step.write.{DataSourceUpdateWriteStep, MetricWriteStep, RecordWriteStep}
 import org.apache.griffin.measure.utils.ParamUtil._
 
 /**
@@ -42,22 +35,6 @@ import org.apache.griffin.measure.utils.ParamUtil._
  */
 case class DistinctnessExpr2DQSteps(context: DQContext, expr: Expr, ruleParam: RuleParam)
     extends Expr2DQSteps {
-
-  private object DistinctnessKeys {
-    val _source = "source"
-    val _target = "target"
-    val _distinct = "distinct"
-    val _total = "total"
-    val _dup = "dup"
-    val _accu_dup = "accu_dup"
-    val _num = "num"
-
-    val _duplicationArray = "duplication.array"
-    val _withAccumulate = "with.accumulate"
-
-    val _recordEnable = "record.enable"
-  }
-  import DistinctnessKeys._
 
   def getDQSteps: Seq[DQStep] = {
     val details = ruleParam.getDetails
@@ -419,6 +396,21 @@ case class DistinctnessExpr2DQSteps(context: DQContext, expr: Expr, ruleParam: R
       // full steps
       transSteps1 ++ transSteps2 ++ transSteps3 ++ transSteps4
     }
+  }
+
+  private object DistinctnessKeys {
+    val _source = "source"
+    val _target = "target"
+    val _distinct = "distinct"
+    val _total = "total"
+    val _dup = "dup"
+    val _accu_dup = "accu_dup"
+    val _num = "num"
+
+    val _duplicationArray = "duplication.array"
+    val _withAccumulate = "with.accumulate"
+
+    val _recordEnable = "record.enable"
   }
 
 }

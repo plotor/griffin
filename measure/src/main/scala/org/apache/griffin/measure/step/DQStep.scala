@@ -17,10 +17,10 @@
 
 package org.apache.griffin.measure.step
 
-import scala.util.Try
-
 import org.apache.griffin.measure.Loggable
 import org.apache.griffin.measure.context.DQContext
+
+import scala.util.Try
 
 trait DQStep extends Loggable {
 

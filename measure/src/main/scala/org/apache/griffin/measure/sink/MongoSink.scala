@@ -17,16 +17,15 @@
 
 package org.apache.griffin.measure.sink
 
-import scala.concurrent.Future
-
+import org.apache.griffin.measure.utils.ParamUtil._
+import org.apache.griffin.measure.utils.TimeUtil
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
 import org.mongodb.scala._
 import org.mongodb.scala.model.{Filters, UpdateOptions, Updates}
 import org.mongodb.scala.result.UpdateResult
 
-import org.apache.griffin.measure.utils.ParamUtil._
-import org.apache.griffin.measure.utils.TimeUtil
+import scala.concurrent.Future
 
 /**
  * sink metric and record to mongo
@@ -45,18 +44,18 @@ case class MongoSink(config: Map[String, Any], jobName: String, timeStamp: Long,
   val _MetricName = "metricName"
   val _Timestamp = "timestamp"
   val _Value = "value"
+  private val filter =
+    Filters.and(Filters.eq(_MetricName, jobName), Filters.eq(_Timestamp, timeStamp))
 
   def validate(): Boolean = MongoConnection.dataConf.available
 
   override def sinkRecords(records: RDD[String], name: String): Unit = {}
+
   override def sinkRecords(records: Iterable[String], name: String): Unit = {}
 
   override def sinkMetrics(metrics: Map[String, Any]): Unit = {
     mongoInsert(metrics)
   }
-
-  private val filter =
-    Filters.and(Filters.eq(_MetricName, jobName), Filters.eq(_Timestamp, timeStamp))
 
   private def mongoInsert(dataMap: Map[String, Any]): Unit = {
     try {
@@ -80,19 +79,12 @@ case class MongoSink(config: Map[String, Any], jobName: String, timeStamp: Long,
 
 object MongoConnection {
 
-  case class MongoConf(url: String, database: String, collection: String) {
-    def available: Boolean = url.nonEmpty && database.nonEmpty && collection.nonEmpty
-  }
-
   val _MongoHead = "mongodb://"
-
   val Url = "url"
   val Database = "database"
   val Collection = "collection"
-
-  private var initialed = false
-
   var dataConf: MongoConf = _
+  private var initialed = false
   private var dataCollection: MongoCollection[Document] = _
 
   def getDataCollection: MongoCollection[Document] = dataCollection
@@ -114,10 +106,15 @@ object MongoConnection {
       }
     MongoConf(mongoUrl, cfg.getString(Database, ""), cfg.getString(Collection, ""))
   }
+
   private def mongoCollection(mongoConf: MongoConf): MongoCollection[Document] = {
     val mongoClient: MongoClient = MongoClient(mongoConf.url)
     val database: MongoDatabase = mongoClient.getDatabase(mongoConf.database)
     database.getCollection(mongoConf.collection)
+  }
+
+  case class MongoConf(url: String, database: String, collection: String) {
+    def available: Boolean = url.nonEmpty && database.nonEmpty && collection.nonEmpty
   }
 
 }

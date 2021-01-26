@@ -17,16 +17,15 @@
 
 package org.apache.griffin.measure.step.transform
 
-import scala.collection.mutable
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
-import scala.concurrent.duration.Duration
-import scala.util.{Failure, Success, Try}
-
 import org.apache.griffin.measure.context.DQContext
-import org.apache.griffin.measure.step.{DQStep, DQStepStatus}
 import org.apache.griffin.measure.step.DQStepStatus._
+import org.apache.griffin.measure.step.{DQStep, DQStepStatus}
 import org.apache.griffin.measure.utils.ThreadUtils
+
+import scala.collection.mutable
+import scala.concurrent.duration.Duration
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
 
 trait TransformStep extends DQStep {
 
@@ -35,10 +34,8 @@ trait TransformStep extends DQStep {
   val details: Map[String, Any]
 
   val cache: Boolean
-
-  var status: DQStepStatus.Value = PENDING
-
   val parentSteps = new mutable.HashSet[TransformStep]
+  var status: DQStepStatus.Value = PENDING
 
   def doExecute(context: DQContext): Try[Boolean]
 

@@ -17,17 +17,13 @@
 
 package org.apache.griffin.measure.utils
 
-import java.util.concurrent._
-
-import scala.concurrent.{Awaitable, ExecutionContext, ExecutionContextExecutor}
-import scala.concurrent.duration.Duration
-import scala.concurrent.forkjoin.{
-  ForkJoinPool => SForkJoinPool,
-  ForkJoinWorkerThread => SForkJoinWorkerThread
-}
-import scala.util.control.NonFatal
-
 import com.google.common.util.concurrent.{MoreExecutors, ThreadFactoryBuilder}
+
+import java.util.concurrent._
+import scala.concurrent.duration.Duration
+import scala.concurrent.forkjoin.{ForkJoinPool => SForkJoinPool, ForkJoinWorkerThread => SForkJoinWorkerThread}
+import scala.concurrent.{Awaitable, ExecutionContext, ExecutionContextExecutor}
+import scala.util.control.NonFatal
 
 private[griffin] object ThreadUtils {
 
@@ -42,19 +38,19 @@ private[griffin] object ThreadUtils {
   def sameThread: ExecutionContextExecutor = sameThreadExecutionContext
 
   /**
-   * Create a thread factory that names threads with a prefix and also sets the threads to daemon.
-   */
-  def namedThreadFactory(prefix: String): ThreadFactory = {
-    new ThreadFactoryBuilder().setDaemon(true).setNameFormat(prefix + "-%d").build()
-  }
-
-  /**
    * Wrapper over newCachedThreadPool. Thread names are formatted as prefix-ID, where ID is a
    * unique, sequentially assigned integer.
    */
   def newDaemonCachedThreadPool(prefix: String): ThreadPoolExecutor = {
     val threadFactory = namedThreadFactory(prefix)
     Executors.newCachedThreadPool(threadFactory).asInstanceOf[ThreadPoolExecutor]
+  }
+
+  /**
+   * Create a thread factory that names threads with a prefix and also sets the threads to daemon.
+   */
+  def namedThreadFactory(prefix: String): ThreadFactory = {
+    new ThreadFactoryBuilder().setDaemon(true).setNameFormat(prefix + "-%d").build()
   }
 
   /**

@@ -17,16 +17,16 @@
 
 package org.apache.griffin.measure.context.streaming.checkpoint.offset
 
-import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.framework.imps.CuratorFrameworkState
 import org.apache.curator.framework.recipes.locks.InterProcessMutex
+import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.ExponentialBackoffRetry
 import org.apache.curator.utils.ZKPaths
+import org.apache.griffin.measure.context.streaming.checkpoint.lock.CheckpointLockInZK
 import org.apache.zookeeper.CreateMode
+
 import scala.collection.JavaConverters._
 import scala.util.matching.Regex
-
-import org.apache.griffin.measure.context.streaming.checkpoint.lock.CheckpointLockInZK
 
 /**
  * leverage zookeeper for info cache
@@ -37,18 +37,15 @@ case class OffsetCheckpointInZK(config: Map[String, Any], metricName: String)
     extends OffsetCheckpoint
     with OffsetOps {
 
+  final val separator = ZKPaths.PATH_SEPARATOR
   val Hosts = "hosts"
   val Namespace = "namespace"
   val Mode = "mode"
   val InitClear = "init.clear"
   val CloseClear = "close.clear"
   val LockPath = "lock.path"
-
   val PersistentRegex: Regex = """^(?i)persist(ent)?$""".r
   val EphemeralRegex: Regex = """^(?i)ephemeral$""".r
-
-  final val separator = ZKPaths.PATH_SEPARATOR
-
   val hosts: String = config.getOrElse(Hosts, "").toString
   val namespace: String = config.getOrElse(Namespace, "").toString
   val mode: CreateMode = config.get(Mode) match {
@@ -106,17 +103,11 @@ case class OffsetCheckpointInZK(config: Map[String, Any], metricName: String)
     client.close()
   }
 
-  def cache(kvs: Map[String, String]): Unit = {
-    kvs.foreach(kv => createOrUpdate(path(kv._1), kv._2))
-  }
-
-  def read(keys: Iterable[String]): Map[String, String] = {
-    keys.flatMap { key =>
-      read(path(key)) match {
-        case Some(v) => Some((key, v))
-        case _ => None
-      }
-    }.toMap
+  def clear(): Unit = {
+//    delete("/")
+    delete(finalCacheInfoPath :: Nil)
+    delete(infoPath :: Nil)
+    info("clear info")
   }
 
   def delete(keys: Iterable[String]): Unit = {
@@ -125,34 +116,20 @@ case class OffsetCheckpointInZK(config: Map[String, Any], metricName: String)
     }
   }
 
-  def clear(): Unit = {
-//    delete("/")
-    delete(finalCacheInfoPath :: Nil)
-    delete(infoPath :: Nil)
-    info("clear info")
-  }
-
-  def listKeys(p: String): List[String] = {
-    children(path(p))
-  }
-
-  def genLock(s: String): CheckpointLockInZK = {
-    val lpt = if (s.isEmpty) path(lockPath) else path(lockPath) + separator + s
-    CheckpointLockInZK(new InterProcessMutex(client, lpt))
-  }
-
   private def path(k: String): String = {
     if (k.startsWith(separator)) k else separator + k
   }
 
-  private def children(path: String): List[String] = {
+  private def delete(path: String): Unit = {
     try {
-      client.getChildren.forPath(path).asScala.toList
+      client.delete().guaranteed().deletingChildrenIfNeeded().forPath(path)
     } catch {
-      case e: Throwable =>
-        warn(s"list $path warn: ${e.getMessage}")
-        Nil
+      case e: Throwable => error(s"delete $path error: ${e.getMessage}")
     }
+  }
+
+  def cache(kvs: Map[String, String]): Unit = {
+    kvs.foreach(kv => createOrUpdate(path(kv._1), kv._2))
   }
 
   private def createOrUpdate(path: String, content: String): Boolean = {
@@ -189,6 +166,25 @@ case class OffsetCheckpointInZK(config: Map[String, Any], metricName: String)
     }
   }
 
+  private def checkExists(path: String): Boolean = {
+    try {
+      client.checkExists().forPath(path) != null
+    } catch {
+      case e: Throwable =>
+        warn(s"check exists $path warn: ${e.getMessage}")
+        false
+    }
+  }
+
+  def read(keys: Iterable[String]): Map[String, String] = {
+    keys.flatMap { key =>
+      read(path(key)) match {
+        case Some(v) => Some((key, v))
+        case _ => None
+      }
+    }.toMap
+  }
+
   private def read(path: String): Option[String] = {
     try {
       Some(new String(client.getData.forPath(path), "utf-8"))
@@ -199,22 +195,23 @@ case class OffsetCheckpointInZK(config: Map[String, Any], metricName: String)
     }
   }
 
-  private def delete(path: String): Unit = {
+  def listKeys(p: String): List[String] = {
+    children(path(p))
+  }
+
+  private def children(path: String): List[String] = {
     try {
-      client.delete().guaranteed().deletingChildrenIfNeeded().forPath(path)
+      client.getChildren.forPath(path).asScala.toList
     } catch {
-      case e: Throwable => error(s"delete $path error: ${e.getMessage}")
+      case e: Throwable =>
+        warn(s"list $path warn: ${e.getMessage}")
+        Nil
     }
   }
 
-  private def checkExists(path: String): Boolean = {
-    try {
-      client.checkExists().forPath(path) != null
-    } catch {
-      case e: Throwable =>
-        warn(s"check exists $path warn: ${e.getMessage}")
-        false
-    }
+  def genLock(s: String): CheckpointLockInZK = {
+    val lpt = if (s.isEmpty) path(lockPath) else path(lockPath) + separator + s
+    CheckpointLockInZK(new InterProcessMutex(client, lpt))
   }
 
 }

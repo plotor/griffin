@@ -17,13 +17,11 @@
 
 package org.apache.griffin.measure.sink
 
-import scala.concurrent.Future
-
-import org.apache.spark.rdd.RDD
+import org.apache.griffin.measure.utils.ParamUtil._
+import org.apache.griffin.measure.utils.{HttpUtil, JsonUtil, TimeUtil}
 import org.apache.spark.sql.DataFrame
 
-import org.apache.griffin.measure.utils.{HttpUtil, JsonUtil, TimeUtil}
-import org.apache.griffin.measure.utils.ParamUtil._
+import scala.concurrent.Future
 
 /**
  * sink metric and record through http request
@@ -54,6 +52,10 @@ case class ElasticSearchSink(
     api.nonEmpty
   }
 
+  override def sinkMetrics(metrics: Map[String, Any]): Unit = {
+    httpResult(metrics)
+  }
+
   private def httpResult(dataMap: Map[String, Any]): Unit = {
     try {
       val data = JsonUtil.toJson(dataMap)
@@ -72,10 +74,6 @@ case class ElasticSearchSink(
       case e: Throwable => error(e.getMessage, e)
     }
 
-  }
-
-  override def sinkMetrics(metrics: Map[String, Any]): Unit = {
-    httpResult(metrics)
   }
 
   override def sinkBatchRecords(dataset: DataFrame, key: Option[String] = None): Unit = {}

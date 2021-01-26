@@ -17,15 +17,14 @@
 
 package org.apache.griffin.measure.step.write
 
-import scala.util.Try
-
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql._
-
 import org.apache.griffin.measure.configuration.enums._
 import org.apache.griffin.measure.context.DQContext
 import org.apache.griffin.measure.step.builder.ConstantColumns
 import org.apache.griffin.measure.utils.JsonUtil
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql._
+
+import scala.util.Try
 
 /**
  * write records needs to be sink
@@ -86,12 +85,8 @@ case class RecordWriteStep(
     true
   }
 
-  private def getTmst(row: Row, defTmst: Long): Long = {
-    try {
-      row.getAs[Long](ConstantColumns.tmst)
-    } catch {
-      case _: Throwable => defTmst
-    }
+  private def getBatchRecords(context: DQContext): Option[DataFrame] = {
+    getDataFrame(context, inputName)
   }
 
   private def getDataFrame(context: DQContext, name: String): Option[DataFrame] = {
@@ -103,13 +98,6 @@ case class RecordWriteStep(
         error(s"get data frame $name fails", e)
         None
     }
-  }
-
-  private def getFilterTableDataFrame(context: DQContext): Option[DataFrame] =
-    filterTableNameOpt.flatMap(getDataFrame(context, _))
-
-  private def getBatchRecords(context: DQContext): Option[DataFrame] = {
-    getDataFrame(context, inputName)
   }
 
   private def getStreamingRecords(
@@ -162,5 +150,16 @@ case class RecordWriteStep(
       case _ => (None, Set[Long]())
     }
   }
+
+  private def getTmst(row: Row, defTmst: Long): Long = {
+    try {
+      row.getAs[Long](ConstantColumns.tmst)
+    } catch {
+      case _: Throwable => defTmst
+    }
+  }
+
+  private def getFilterTableDataFrame(context: DQContext): Option[DataFrame] =
+    filterTableNameOpt.flatMap(getDataFrame(context, _))
 
 }

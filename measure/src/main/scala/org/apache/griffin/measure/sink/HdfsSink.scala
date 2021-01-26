@@ -17,11 +17,10 @@
 
 package org.apache.griffin.measure.sink
 
+import org.apache.griffin.measure.utils.ParamUtil._
+import org.apache.griffin.measure.utils.{HdfsUtil, JsonUtil}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
-
-import org.apache.griffin.measure.utils.{HdfsUtil, JsonUtil}
-import org.apache.griffin.measure.utils.ParamUtil._
 
 /**
  * sink metric and record to hdfs
@@ -67,14 +66,6 @@ case class HdfsSink(config: Map[String, Any], jobName: String, timeStamp: Long) 
 //    logHead + timeHead(rt) + s"$msg\n\n"
 //  }
 
-  protected def filePath(file: String): String = {
-    HdfsUtil.getHdfsFilePath(parentPath, s"$jobName/$timeStamp/$file")
-  }
-
-  protected def withSuffix(path: String, suffix: String): String = {
-    s"$path.$suffix"
-  }
-
   override def open(applicationId: String): Unit = {
     try {
       HdfsUtil.writeContent(StartFile, applicationId)
@@ -91,6 +82,38 @@ case class HdfsSink(config: Map[String, Any], jobName: String, timeStamp: Long) 
     }
   }
 
+  override def sinkRecords(records: Iterable[String], name: String): Unit = {
+    val path = filePath(name)
+    clearOldRecords(path)
+    try {
+      val recordCount = records.size
+
+      val count =
+        if (maxPersistLines < 0) recordCount else scala.math.min(maxPersistLines, recordCount)
+
+      if (count > 0) {
+        val groupCount = (count - 1) / maxLinesPerFile + 1
+        if (groupCount <= 1) {
+          val recs = records.take(count.toInt)
+          sinkRecords2Hdfs(path, recs)
+        } else {
+          val groupedRecords = records.grouped(maxLinesPerFile).zipWithIndex
+          groupedRecords.take(groupCount).foreach { group =>
+            val (recs, gid) = group
+            val hdfsPath = getHdfsPath(path, gid)
+            sinkRecords2Hdfs(hdfsPath, recs)
+          }
+        }
+      }
+    } catch {
+      case e: Throwable => error(e.getMessage, e)
+    }
+  }
+
+  private def getHdfsPath(path: String, groupId: Int): String = {
+    HdfsUtil.getHdfsFilePath(path, s"$groupId")
+  }
+
 //  def log(rt: Long, msg: String): Unit = {
 //    try {
 //      val logStr = logWrap(rt, msg)
@@ -102,12 +125,17 @@ case class HdfsSink(config: Map[String, Any], jobName: String, timeStamp: Long) 
 //    }
 //  }
 
-  private def getHdfsPath(path: String, groupId: Int): String = {
-    HdfsUtil.getHdfsFilePath(path, s"$groupId")
+  override def sinkMetrics(metrics: Map[String, Any]): Unit = {
+    try {
+      val json = JsonUtil.toJson(metrics)
+      sinkRecords2Hdfs(MetricsFile, json :: Nil)
+    } catch {
+      case e: Throwable => error(e.getMessage, e)
+    }
   }
 
-  private def clearOldRecords(path: String): Unit = {
-    HdfsUtil.deleteHdfsPath(path)
+  override def sinkBatchRecords(dataset: DataFrame, key: Option[String] = None): Unit = {
+    sinkRecords(dataset.toJSON.rdd, key.getOrElse(""))
   }
 
   override def sinkRecords(records: RDD[String], name: String): Unit = {
@@ -144,43 +172,6 @@ case class HdfsSink(config: Map[String, Any], jobName: String, timeStamp: Long) 
     }
   }
 
-  override def sinkRecords(records: Iterable[String], name: String): Unit = {
-    val path = filePath(name)
-    clearOldRecords(path)
-    try {
-      val recordCount = records.size
-
-      val count =
-        if (maxPersistLines < 0) recordCount else scala.math.min(maxPersistLines, recordCount)
-
-      if (count > 0) {
-        val groupCount = (count - 1) / maxLinesPerFile + 1
-        if (groupCount <= 1) {
-          val recs = records.take(count.toInt)
-          sinkRecords2Hdfs(path, recs)
-        } else {
-          val groupedRecords = records.grouped(maxLinesPerFile).zipWithIndex
-          groupedRecords.take(groupCount).foreach { group =>
-            val (recs, gid) = group
-            val hdfsPath = getHdfsPath(path, gid)
-            sinkRecords2Hdfs(hdfsPath, recs)
-          }
-        }
-      }
-    } catch {
-      case e: Throwable => error(e.getMessage, e)
-    }
-  }
-
-  override def sinkMetrics(metrics: Map[String, Any]): Unit = {
-    try {
-      val json = JsonUtil.toJson(metrics)
-      sinkRecords2Hdfs(MetricsFile, json :: Nil)
-    } catch {
-      case e: Throwable => error(e.getMessage, e)
-    }
-  }
-
   private def sinkRecords2Hdfs(hdfsPath: String, records: Iterable[String]): Unit = {
     try {
       HdfsUtil.withHdfsFile(hdfsPath, appendIfExists = false) { out =>
@@ -193,7 +184,15 @@ case class HdfsSink(config: Map[String, Any], jobName: String, timeStamp: Long) 
     }
   }
 
-  override def sinkBatchRecords(dataset: DataFrame, key: Option[String] = None): Unit = {
-    sinkRecords(dataset.toJSON.rdd, key.getOrElse(""))
+  protected def filePath(file: String): String = {
+    HdfsUtil.getHdfsFilePath(parentPath, s"$jobName/$timeStamp/$file")
+  }
+
+  protected def withSuffix(path: String, suffix: String): String = {
+    s"$path.$suffix"
+  }
+
+  private def clearOldRecords(path: String): Unit = {
+    HdfsUtil.deleteHdfsPath(path)
   }
 }

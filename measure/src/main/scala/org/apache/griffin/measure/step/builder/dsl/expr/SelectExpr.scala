@@ -22,19 +22,23 @@ trait HeadExpr extends Expr with AliasableExpr {
 }
 
 case class DataSourceHeadExpr(name: String) extends HeadExpr {
-  def desc: String = s"`$name`"
   def coalesceDesc: String = desc
+
+  def desc: String = s"`$name`"
 }
 
 case class FieldNameHeadExpr(field: String) extends HeadExpr {
-  def desc: String = s"`$field`"
   def coalesceDesc: String = desc
+
+  def desc: String = s"`$field`"
+
   override def alias: Option[String] = Some(field)
 }
 
 case class AllSelectHeadExpr() extends HeadExpr {
-  def desc: String = "*"
   def coalesceDesc: String = desc
+
+  def desc: String = "*"
 }
 
 case class OtherHeadExpr(expr: Expr) extends HeadExpr {
@@ -55,14 +59,18 @@ case class OtherHeadExpr(expr: Expr) extends HeadExpr {
 trait SelectExpr extends Expr with AliasableExpr {}
 
 case class AllFieldsSelectExpr() extends SelectExpr {
-  def desc: String = ".*"
   def coalesceDesc: String = desc
+
+  def desc: String = ".*"
+
   def alias: Option[String] = None
 }
 
 case class FieldSelectExpr(field: String) extends SelectExpr {
-  def desc: String = s".`$field`"
   def coalesceDesc: String = desc
+
+  def desc: String = s".`$field`"
+
   override def alias: Option[String] = Some(field)
 }
 
@@ -70,8 +78,10 @@ case class IndexSelectExpr(index: Expr) extends SelectExpr {
 
   addChild(index)
 
-  def desc: String = s"[${index.desc}]"
   def coalesceDesc: String = desc
+
+  def desc: String = s"[${index.desc}]"
+
   def alias: Option[String] = Some(index.desc)
 
   override def map(func: Expr => Expr): IndexSelectExpr = {
@@ -83,8 +93,10 @@ case class FunctionSelectExpr(functionName: String, args: Seq[Expr]) extends Sel
 
   addChildren(args)
 
-  def desc: String = ""
   def coalesceDesc: String = desc
+
+  def desc: String = ""
+
   def alias: Option[String] = Some(functionName)
 
   override def map(func: Expr => Expr): FunctionSelectExpr = {
@@ -99,6 +111,14 @@ case class SelectionExpr(head: HeadExpr, selectors: Seq[SelectExpr], aliasOpt: O
 
   addChildren(head +: selectors)
 
+  def coalesceDesc: String = {
+    selectors.lastOption match {
+      case None => desc
+      case Some(_: FunctionSelectExpr) => desc
+      case _ => s"coalesce($desc, '')"
+    }
+  }
+
   def desc: String = {
     selectors.foldLeft(head.desc) { (hd, sel) =>
       sel match {
@@ -109,13 +129,7 @@ case class SelectionExpr(head: HeadExpr, selectors: Seq[SelectExpr], aliasOpt: O
       }
     }
   }
-  def coalesceDesc: String = {
-    selectors.lastOption match {
-      case None => desc
-      case Some(_: FunctionSelectExpr) => desc
-      case _ => s"coalesce($desc, '')"
-    }
-  }
+
   def alias: Option[String] = {
     if (aliasOpt.isEmpty) {
       val aliasSeq = (head +: selectors).flatMap(_.alias)

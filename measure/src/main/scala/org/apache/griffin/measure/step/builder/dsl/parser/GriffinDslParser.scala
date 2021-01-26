@@ -28,6 +28,19 @@ case class GriffinDslParser(dataSourceNames: Seq[String], functionNames: Seq[Str
 
   import Operator._
 
+  def parseRule(rule: String, dqType: DqType): ParseResult[Expr] = {
+    val rootExpr = dqType match {
+      case Accuracy => logicalExpression
+      case Profiling => profilingClause
+      case Uniqueness => uniquenessClause
+      case Distinct => distinctnessClause
+      case Timeliness => timelinessClause
+      case Completeness => completenessClause
+      case _ => expression
+    }
+    parseAll(rootExpr, rule)
+  }
+
   /**
    * -- profiling clauses --
    * <profiling-clauses> = <select-clause> [ <from-clause> ]+ [ <where-clause> ]+
@@ -49,6 +62,11 @@ case class GriffinDslParser(dataSourceNames: Seq[String], functionNames: Seq[Str
   def uniquenessClause: Parser[UniquenessClause] =
     rep1sep(expression, Operator.COMMA) ^^ (exprs => UniquenessClause(exprs))
 
+  def distinctnessClause: Parser[DistinctnessClause] =
+    rep1sep(distExpr, Operator.COMMA) ^^ (exprs => DistinctnessClause(exprs))
+
+  def distExpr: Parser[Expr] = expression | sqbrExpr
+
   /**
    * -- distinctness clauses --
    * <sqbr-expr> = "[" <expr> "]"
@@ -58,9 +76,6 @@ case class GriffinDslParser(dataSourceNames: Seq[String], functionNames: Seq[Str
   def sqbrExpr: Parser[Expr] = LSQBR ~> expression <~ RSQBR ^^ { expr =>
     expr.tag = "[]"; expr
   }
-  def distExpr: Parser[Expr] = expression | sqbrExpr
-  def distinctnessClause: Parser[DistinctnessClause] =
-    rep1sep(distExpr, Operator.COMMA) ^^ (exprs => DistinctnessClause(exprs))
 
   /**
    * -- timeliness clauses --
@@ -75,18 +90,5 @@ case class GriffinDslParser(dataSourceNames: Seq[String], functionNames: Seq[Str
    */
   def completenessClause: Parser[CompletenessClause] =
     rep1sep(expression, Operator.COMMA) ^^ (exprs => CompletenessClause(exprs))
-
-  def parseRule(rule: String, dqType: DqType): ParseResult[Expr] = {
-    val rootExpr = dqType match {
-      case Accuracy => logicalExpression
-      case Profiling => profilingClause
-      case Uniqueness => uniquenessClause
-      case Distinct => distinctnessClause
-      case Timeliness => timelinessClause
-      case Completeness => completenessClause
-      case _ => expression
-    }
-    parseAll(rootExpr, rule)
-  }
 
 }

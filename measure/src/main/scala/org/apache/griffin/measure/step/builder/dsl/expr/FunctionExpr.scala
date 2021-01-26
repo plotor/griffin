@@ -27,13 +27,15 @@ case class FunctionExpr(
 
   addChildren(args)
 
+  def coalesceDesc: String = desc
+
   def desc: String = {
     extraConditionOpt match {
       case Some(cdtn) => s"$functionName(${cdtn.desc} ${args.map(_.desc).mkString(", ")})"
       case _ => s"$functionName(${args.map(_.desc).mkString(", ")})"
     }
   }
-  def coalesceDesc: String = desc
+
   def alias: Option[String] = {
     if (aliasOpt.isEmpty) {
       Some(functionName)

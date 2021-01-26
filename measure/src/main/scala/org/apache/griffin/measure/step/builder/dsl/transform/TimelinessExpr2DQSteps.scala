@@ -18,10 +18,7 @@
 package org.apache.griffin.measure.step.builder.dsl.transform
 
 import org.apache.griffin.measure.configuration.dqdefinition.RuleParam
-import org.apache.griffin.measure.configuration.enums.FlattenType.{
-  ArrayFlattenType,
-  DefaultFlattenType
-}
+import org.apache.griffin.measure.configuration.enums.FlattenType.{ArrayFlattenType, DefaultFlattenType}
 import org.apache.griffin.measure.configuration.enums.OutputType._
 import org.apache.griffin.measure.configuration.enums.ProcessType._
 import org.apache.griffin.measure.context.DQContext
@@ -39,20 +36,6 @@ import org.apache.griffin.measure.utils.TimeUtil
  */
 case class TimelinessExpr2DQSteps(context: DQContext, expr: Expr, ruleParam: RuleParam)
     extends Expr2DQSteps {
-
-  private object TimelinessKeys {
-    val _source = "source"
-    val _latency = "latency"
-    val _total = "total"
-    val _avg = "avg"
-    val _threshold = "threshold"
-    val _step = "step"
-    val _count = "count"
-    val _stepSize = "step.size"
-    val _percentileColPrefix = "percentile"
-    val _percentileValues = "percentile.values"
-  }
-  import TimelinessKeys._
 
   def getDQSteps: Seq[DQStep] = {
     val details = ruleParam.getDetails
@@ -243,9 +226,23 @@ case class TimelinessExpr2DQSteps(context: DQContext, expr: Expr, ruleParam: Rul
       transSteps1 ++ transSteps2 ++ transSteps3 ++ transSteps4
     }
   }
+  import TimelinessKeys._
 
   private def getPercentiles(details: Map[String, Any]): Seq[Double] = {
     details.getDoubleArr(_percentileValues).filter(d => d >= 0 && d <= 1)
+  }
+
+  private object TimelinessKeys {
+    val _source = "source"
+    val _latency = "latency"
+    val _total = "total"
+    val _avg = "avg"
+    val _threshold = "threshold"
+    val _step = "step"
+    val _count = "count"
+    val _stepSize = "step.size"
+    val _percentileColPrefix = "percentile"
+    val _percentileValues = "percentile.values"
   }
 
 }

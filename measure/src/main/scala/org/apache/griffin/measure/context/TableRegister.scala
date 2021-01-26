@@ -17,11 +17,10 @@
 
 package org.apache.griffin.measure.context
 
-import scala.collection.mutable.{Set => MutableSet}
-
+import org.apache.griffin.measure.Loggable
 import org.apache.spark.sql._
 
-import org.apache.griffin.measure.Loggable
+import scala.collection.mutable.{Set => MutableSet}
 
 /**
  * register table name
@@ -34,13 +33,14 @@ trait TableRegister extends Loggable with Serializable {
     tables += name
   }
 
+  def unregisterTable(name: String): Unit = {
+    if (existsTable(name)) tables -= name
+  }
+
   def existsTable(name: String): Boolean = {
     tables.exists(_.equals(name))
   }
 
-  def unregisterTable(name: String): Unit = {
-    if (existsTable(name)) tables -= name
-  }
   def unregisterAllTables(): Unit = {
     tables.clear
   }

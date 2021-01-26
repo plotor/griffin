@@ -24,13 +24,14 @@ case class SelectClause(exprs: Seq[Expr], extraConditionOpt: Option[ExtraConditi
 
   addChildren(exprs)
 
+  def coalesceDesc: String = desc
+
   def desc: String = {
     extraConditionOpt match {
       case Some(cdtn) => s"${cdtn.desc} ${exprs.map(_.desc).mkString(", ")}"
       case _ => s"${exprs.map(_.desc).mkString(", ")}"
     }
   }
-  def coalesceDesc: String = desc
 
   override def map(func: Expr => Expr): SelectClause = {
     SelectClause(
@@ -42,8 +43,9 @@ case class SelectClause(exprs: Seq[Expr], extraConditionOpt: Option[ExtraConditi
 
 case class FromClause(dataSource: String) extends ClauseExpression {
 
-  def desc: String = s"FROM `$dataSource`"
   def coalesceDesc: String = desc
+
+  def desc: String = s"FROM `$dataSource`"
 
 }
 
@@ -101,13 +103,14 @@ case class GroupbyClause(exprs: Seq[Expr], havingClauseOpt: Option[Expr])
 
 case class OrderItem(expr: Expr, orderOpt: Option[String]) extends Expr {
   addChild(expr)
+  def coalesceDesc: String = desc
+
   def desc: String = {
     orderOpt match {
       case Some(os) => s"${expr.desc} ${os.toUpperCase}"
       case _ => s"${expr.desc}"
     }
   }
-  def coalesceDesc: String = desc
 
   override def map(func: Expr => Expr): OrderItem = {
     OrderItem(func(expr), orderOpt)

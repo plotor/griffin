@@ -17,10 +17,9 @@
 
 package org.apache.griffin.measure.step.read
 
-import org.apache.spark.sql._
-
 import org.apache.griffin.measure.context.DQContext
 import org.apache.griffin.measure.utils.DataFrameUtil._
+import org.apache.spark.sql._
 
 case class UnionReadStep(name: String, readSteps: Seq[ReadStep]) extends ReadStep {
 

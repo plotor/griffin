@@ -17,13 +17,6 @@
 
 package org.apache.griffin.measure.launch.batch
 
-import java.util.concurrent.TimeUnit
-
-import scala.util.Try
-
-import org.apache.spark.SparkConf
-import org.apache.spark.sql.SparkSession
-
 import org.apache.griffin.measure.configuration.dqdefinition._
 import org.apache.griffin.measure.configuration.enums.ProcessType.BatchProcessType
 import org.apache.griffin.measure.context._
@@ -32,6 +25,11 @@ import org.apache.griffin.measure.job.builder.DQJobBuilder
 import org.apache.griffin.measure.launch.DQApp
 import org.apache.griffin.measure.step.builder.udf.GriffinUDFAgent
 import org.apache.griffin.measure.utils.CommonUtils
+import org.apache.spark.SparkConf
+import org.apache.spark.sql.SparkSession
+
+import java.util.concurrent.TimeUnit
+import scala.util.Try
 
 case class BatchDQApp(allParam: GriffinConfig) extends DQApp {
 

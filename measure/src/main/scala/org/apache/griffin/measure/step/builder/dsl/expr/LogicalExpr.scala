@@ -106,11 +106,12 @@ case class IsNullExpr(head: Expr, is: Boolean) extends LogicalExpr {
 
   addChild(head)
 
+  def coalesceDesc: String = desc
+
   def desc: String = {
     val notStr = if (is) "" else " NOT"
     s"${head.desc} IS$notStr NULL"
   }
-  def coalesceDesc: String = desc
 
   override def map(func: Expr => Expr): IsNullExpr = {
     IsNullExpr(func(head), is)
@@ -121,11 +122,12 @@ case class IsNanExpr(head: Expr, is: Boolean) extends LogicalExpr {
 
   addChild(head)
 
+  def coalesceDesc: String = desc
+
   def desc: String = {
     val notStr = if (is) "" else "NOT "
     s"${notStr}isnan(${head.desc})"
   }
-  def coalesceDesc: String = desc
 
   override def map(func: Expr => Expr): IsNanExpr = {
     IsNanExpr(func(head), is)
@@ -162,17 +164,20 @@ case class UnaryLogicalExpr(oprs: Seq[String], factor: LogicalExpr) extends Logi
       s"(${trans(opr)} $fac)"
     }
   }
+
   def coalesceDesc: String = {
     oprs.foldRight(factor.coalesceDesc) { (opr, fac) =>
       s"(${trans(opr)} $fac)"
     }
   }
+
   private def trans(s: String): String = {
     s match {
       case "!" => "NOT"
       case _ => s.toUpperCase
     }
   }
+
   override def extractSelf: Expr = {
     if (oprs.nonEmpty) this
     else factor.extractSelf
@@ -195,13 +200,7 @@ case class BinaryLogicalExpr(factor: LogicalExpr, tails: Seq[(String, LogicalExp
     }
     if (tails.size <= 0) res else s"$res"
   }
-  def coalesceDesc: String = {
-    val res = tails.foldLeft(factor.coalesceDesc) { (fac, tail) =>
-      val (opr, expr) = tail
-      s"$fac ${trans(opr)} ${expr.coalesceDesc}"
-    }
-    if (tails.size <= 0) res else s"$res"
-  }
+
   private def trans(s: String): String = {
     s match {
       case "&&" => "AND"
@@ -209,6 +208,15 @@ case class BinaryLogicalExpr(factor: LogicalExpr, tails: Seq[(String, LogicalExp
       case _ => s.trim.toUpperCase
     }
   }
+
+  def coalesceDesc: String = {
+    val res = tails.foldLeft(factor.coalesceDesc) { (fac, tail) =>
+      val (opr, expr) = tail
+      s"$fac ${trans(opr)} ${expr.coalesceDesc}"
+    }
+    if (tails.size <= 0) res else s"$res"
+  }
+
   override def extractSelf: Expr = {
     if (tails.nonEmpty) this
     else factor.extractSelf

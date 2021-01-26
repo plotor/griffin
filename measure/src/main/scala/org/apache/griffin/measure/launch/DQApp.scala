@@ -17,13 +17,12 @@
 
 package org.apache.griffin.measure.launch
 
-import scala.util.Try
-
+import org.apache.griffin.measure.Loggable
+import org.apache.griffin.measure.configuration.dqdefinition.{DQConfig, EnvConfig, SinkParam}
 import org.apache.spark.metrics.sink.Sink
 import org.apache.spark.sql.SparkSession
 
-import org.apache.griffin.measure.Loggable
-import org.apache.griffin.measure.configuration.dqdefinition.{DQConfig, EnvConfig, SinkParam}
+import scala.util.Try
 
 /**
  * dq application process

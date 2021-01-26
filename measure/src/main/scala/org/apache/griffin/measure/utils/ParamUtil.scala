@@ -18,7 +18,6 @@
 package org.apache.griffin.measure.utils
 
 import scala.reflect.ClassTag
-import scala.util.Try
 
 object ParamUtil {
 
@@ -155,15 +154,15 @@ object ParamUtil {
       params.get(key).flatMap(toAnyRef[T]).getOrElse(defValue)
     }
 
-    def getString(key: String, defValue: String): String = {
-      params.get(key).flatMap(toStringOpt).getOrElse(defValue)
-    }
-
     def getLazyString(key: String, defValue: () => String): String = {
       params.get(key).flatMap(toStringOpt).getOrElse(defValue())
     }
 
     def getStringOrKey(key: String): String = getString(key, key)
+
+    def getString(key: String, defValue: String): String = {
+      params.get(key).flatMap(toStringOpt).getOrElse(defValue)
+    }
 
     def getByte(key: String, defValue: Byte): Byte = {
       params.get(key).flatMap(toByte).getOrElse(defValue)

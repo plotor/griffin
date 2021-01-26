@@ -17,19 +17,13 @@
 
 package org.apache.griffin.measure.step.write
 
-import scala.util.Try
-
+import org.apache.griffin.measure.configuration.enums.FlattenType.{ArrayFlattenType, EntriesFlattenType, FlattenType, MapFlattenType}
 import org.apache.griffin.measure.configuration.enums.{SimpleMode, TimestampMode}
-import org.apache.griffin.measure.configuration.enums.FlattenType.{
-  ArrayFlattenType,
-  EntriesFlattenType,
-  FlattenType,
-  MapFlattenType
-}
 import org.apache.griffin.measure.context.DQContext
 import org.apache.griffin.measure.step.builder.ConstantColumns
-import org.apache.griffin.measure.utils.JsonUtil
 import org.apache.griffin.measure.utils.ParamUtil._
+
+import scala.util.Try
 
 /**
  * write metrics into context metric wrapper

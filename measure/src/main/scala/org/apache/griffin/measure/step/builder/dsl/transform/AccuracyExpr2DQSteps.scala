@@ -26,17 +26,9 @@ import org.apache.griffin.measure.step.DQStep
 import org.apache.griffin.measure.step.builder.ConstantColumns
 import org.apache.griffin.measure.step.builder.dsl.expr._
 import org.apache.griffin.measure.step.builder.dsl.transform.analyzer.AccuracyAnalyzer
-import org.apache.griffin.measure.step.transform.{
-  DataFrameOps,
-  DataFrameOpsTransformStep,
-  SparkSqlTransformStep
-}
 import org.apache.griffin.measure.step.transform.DataFrameOps.AccuracyOprKeys
-import org.apache.griffin.measure.step.write.{
-  DataSourceUpdateWriteStep,
-  MetricWriteStep,
-  RecordWriteStep
-}
+import org.apache.griffin.measure.step.transform.{DataFrameOps, DataFrameOpsTransformStep, SparkSqlTransformStep}
+import org.apache.griffin.measure.step.write.{DataSourceUpdateWriteStep, MetricWriteStep, RecordWriteStep}
 import org.apache.griffin.measure.utils.ParamUtil._
 
 /**
@@ -44,16 +36,6 @@ import org.apache.griffin.measure.utils.ParamUtil._
  */
 case class AccuracyExpr2DQSteps(context: DQContext, expr: Expr, ruleParam: RuleParam)
     extends Expr2DQSteps {
-
-  private object AccuracyKeys {
-    val _source = "source"
-    val _target = "target"
-    val _miss = "miss"
-    val _total = "total"
-    val _matched = "matched"
-    val _matchedFraction = "matchedFraction"
-  }
-  import AccuracyKeys._
 
   def getDQSteps: Seq[DQStep] = {
     val details = ruleParam.getDetails
@@ -254,6 +236,15 @@ case class AccuracyExpr2DQSteps(context: DQContext, expr: Expr, ruleParam: RuleP
           accuracyRecordTransStep :: Nil
       }
     }
+  }
+
+  private object AccuracyKeys {
+    val _source = "source"
+    val _target = "target"
+    val _miss = "miss"
+    val _total = "total"
+    val _matched = "matched"
+    val _matchedFraction = "matchedFraction"
   }
 
 }
