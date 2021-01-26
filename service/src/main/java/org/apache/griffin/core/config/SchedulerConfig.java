@@ -19,9 +19,6 @@ under the License.
 
 package org.apache.griffin.core.config;
 
-import java.util.Properties;
-import javax.sql.DataSource;
-
 import org.apache.griffin.core.job.factory.AutowiringSpringBeanJobFactory;
 import org.quartz.spi.JobFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +27,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
+
+import java.util.Properties;
+import javax.sql.DataSource;
 
 @Configuration
 public class SchedulerConfig {
@@ -44,7 +44,7 @@ public class SchedulerConfig {
     @Bean
     public JobFactory jobFactory(ApplicationContext applicationContext) {
         AutowiringSpringBeanJobFactory jobFactory =
-            new AutowiringSpringBeanJobFactory();
+                new AutowiringSpringBeanJobFactory();
         jobFactory.setApplicationContext(applicationContext);
         return jobFactory;
     }

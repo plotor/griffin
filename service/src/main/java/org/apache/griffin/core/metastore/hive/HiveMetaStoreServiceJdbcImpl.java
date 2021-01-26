@@ -19,20 +19,6 @@ under the License.
 
 package org.apache.griffin.core.metastore.hive;
 
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.annotation.PostConstruct;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -48,6 +34,19 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.annotation.PostConstruct;
 
 @Service
 @Qualifier(value = "jdbcSvc")
@@ -55,7 +54,7 @@ import org.springframework.stereotype.Service;
 public class HiveMetaStoreServiceJdbcImpl implements HiveMetaStoreService {
 
     private static final Logger LOGGER = LoggerFactory
-        .getLogger(HiveMetaStoreService.class);
+            .getLogger(HiveMetaStoreService.class);
 
     private static final String SHOW_TABLES_IN = "show tables in ";
 
@@ -190,11 +189,11 @@ public class HiveMetaStoreServiceJdbcImpl implements HiveMetaStoreService {
     }
 
     @Scheduled(fixedRateString =
-        "${cache.evict.hive.fixedRate.in.milliseconds}")
+            "${cache.evict.hive.fixedRate.in.milliseconds}")
     @CacheEvict(
-        cacheNames = "jdbcHive",
-        allEntries = true,
-        beforeInvocation = true)
+            cacheNames = "jdbcHive",
+            allEntries = true,
+            beforeInvocation = true)
     public void evictHiveCache() {
         LOGGER.info("Evict hive cache");
     }
@@ -228,7 +227,6 @@ public class HiveMetaStoreServiceJdbcImpl implements HiveMetaStoreService {
         }
         return res;
     }
-
 
     private void closeConnection(Statement stmt, ResultSet rs) {
         try {

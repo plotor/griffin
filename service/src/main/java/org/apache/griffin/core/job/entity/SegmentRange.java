@@ -19,10 +19,10 @@ under the License.
 
 package org.apache.griffin.core.job.entity;
 
+import org.apache.griffin.core.measure.entity.AbstractAuditableEntity;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
-
-import org.apache.griffin.core.measure.entity.AbstractAuditableEntity;
 
 @Entity
 public class SegmentRange extends AbstractAuditableEntity {
@@ -33,6 +33,14 @@ public class SegmentRange extends AbstractAuditableEntity {
     private String begin = "-1h";
 
     private String length = "1h";
+
+    public SegmentRange(String begin, String length) {
+        this.begin = begin;
+        this.length = length;
+    }
+
+    SegmentRange() {
+    }
 
     public String getBegin() {
         return begin;
@@ -48,14 +56,6 @@ public class SegmentRange extends AbstractAuditableEntity {
 
     public void setLength(String length) {
         this.length = length;
-    }
-
-    public SegmentRange(String begin, String length) {
-        this.begin = begin;
-        this.length = length;
-    }
-
-    SegmentRange() {
     }
 
 }

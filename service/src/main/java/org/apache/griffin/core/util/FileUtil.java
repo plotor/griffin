@@ -19,15 +19,15 @@ under the License.
 
 package org.apache.griffin.core.util;
 
-import java.io.File;
-
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+
 public class FileUtil {
     private static final Logger LOGGER = LoggerFactory
-        .getLogger(FileUtil.class);
+            .getLogger(FileUtil.class);
 
     public static String getFilePath(String name, String location) {
         if (StringUtils.isEmpty(location)) {
@@ -39,7 +39,7 @@ public class FileUtil {
         File[] files = file.listFiles();
         if (files == null) {
             LOGGER.warn("The external location '{}' does not exist.Read from"
-                + "default path.", location);
+                    + "default path.", location);
             return null;
         }
         return getFilePath(name, files, location);

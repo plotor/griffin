@@ -19,8 +19,6 @@ under the License.
 
 package org.apache.griffin.core.metastore.kafka;
 
-import java.util.Arrays;
-
 import io.confluent.kafka.schemaregistry.client.rest.entities.Config;
 import io.confluent.kafka.schemaregistry.client.rest.entities.Schema;
 import io.confluent.kafka.schemaregistry.client.rest.entities.SchemaString;
@@ -32,16 +30,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Arrays;
+
 @Service
 public class KafkaSchemaServiceImpl implements KafkaSchemaService {
 
     private static final Logger log = LoggerFactory
-        .getLogger(KafkaSchemaServiceImpl.class);
-
+            .getLogger(KafkaSchemaServiceImpl.class);
+    RestTemplate restTemplate = new RestTemplate();
     @Value("${kafka.schema.registry.url}")
     private String url;
-
-    RestTemplate restTemplate = new RestTemplate();
 
     private String registryUrl(final String path) {
         if (StringUtils.hasText(path)) {
@@ -59,7 +57,7 @@ public class KafkaSchemaServiceImpl implements KafkaSchemaService {
         String path = "/schemas/ids/" + id;
         String regUrl = registryUrl(path);
         ResponseEntity<SchemaString> res = restTemplate.getForEntity(regUrl,
-            SchemaString.class);
+                SchemaString.class);
         SchemaString result = res.getBody();
         return result;
     }
@@ -69,7 +67,7 @@ public class KafkaSchemaServiceImpl implements KafkaSchemaService {
         String path = "/subjects";
         String regUrl = registryUrl(path);
         ResponseEntity<String[]> res = restTemplate.getForEntity(regUrl,
-            String[].class);
+                String[].class);
         Iterable<String> result = Arrays.asList(res.getBody());
         return result;
     }
@@ -79,7 +77,7 @@ public class KafkaSchemaServiceImpl implements KafkaSchemaService {
         String path = "/subjects/" + subject + "/versions";
         String regUrl = registryUrl(path);
         ResponseEntity<Integer[]> res = restTemplate.getForEntity(regUrl,
-            Integer[].class);
+                Integer[].class);
         Iterable<Integer> result = Arrays.asList(res.getBody());
         return result;
     }
@@ -89,7 +87,7 @@ public class KafkaSchemaServiceImpl implements KafkaSchemaService {
         String path = "/subjects/" + subject + "/versions/" + version;
         String regUrl = registryUrl(path);
         ResponseEntity<Schema> res = restTemplate.getForEntity(regUrl,
-            Schema.class);
+                Schema.class);
         Schema result = res.getBody();
         return result;
     }
@@ -99,7 +97,7 @@ public class KafkaSchemaServiceImpl implements KafkaSchemaService {
         String path = "/config";
         String regUrl = registryUrl(path);
         ResponseEntity<Config> res = restTemplate.getForEntity(regUrl,
-            Config.class);
+                Config.class);
         Config result = res.getBody();
         return result;
     }
@@ -109,7 +107,7 @@ public class KafkaSchemaServiceImpl implements KafkaSchemaService {
         String path = "/config/" + subject;
         String regUrl = registryUrl(path);
         ResponseEntity<Config> res = restTemplate.getForEntity(regUrl,
-            Config.class);
+                Config.class);
         Config result = res.getBody();
         return result;
     }

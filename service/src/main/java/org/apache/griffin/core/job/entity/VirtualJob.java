@@ -27,16 +27,16 @@ import javax.persistence.Entity;
 public class VirtualJob extends AbstractJob {
     private static final long serialVersionUID = 1130038058433818835L;
 
-    @Override
-    public String getType() {
-        return JobType.VIRTUAL.getName();
-    }
-
     public VirtualJob() {
         super();
     }
 
     public VirtualJob(String jobName, Long measureId, String metricName) {
         super(jobName, measureId, metricName);
+    }
+
+    @Override
+    public String getType() {
+        return JobType.VIRTUAL.getName();
     }
 }

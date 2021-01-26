@@ -16,12 +16,20 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 */
-package org.apache.griffin.core.job.entity;
 
+package org.apache.griffin.core.job.entity;
 
 public class JobHealth {
     private int healthyJobCount;
     private int jobCount;
+
+    public JobHealth(int healthyJobCount, int jobCount) {
+        this.healthyJobCount = healthyJobCount;
+        this.jobCount = jobCount;
+    }
+
+    public JobHealth() {
+    }
 
     public int getHealthyJobCount() {
         return healthyJobCount;
@@ -37,13 +45,5 @@ public class JobHealth {
 
     public void setJobCount(int jobCount) {
         this.jobCount = jobCount;
-    }
-
-    public JobHealth(int healthyJobCount, int jobCount) {
-        this.healthyJobCount = healthyJobCount;
-        this.jobCount = jobCount;
-    }
-
-    public JobHealth() {
     }
 }

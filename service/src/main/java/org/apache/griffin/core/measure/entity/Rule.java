@@ -24,6 +24,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.apache.commons.lang.StringUtils;
+import org.apache.griffin.core.util.JsonUtil;
 
 import java.io.IOException;
 import java.util.List;
@@ -37,10 +39,6 @@ import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.griffin.core.util.JsonUtil;
-
 
 @Entity
 public class Rule extends AbstractAuditableEntity {
@@ -83,6 +81,32 @@ public class Rule extends AbstractAuditableEntity {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Boolean cache;
+
+    public Rule() {
+    }
+
+    public Rule(String dslType,
+                DqType dqType,
+                String rule,
+                Map<String, Object> detailsMap)
+            throws JsonProcessingException {
+        this.dslType = dslType;
+        this.dqType = dqType;
+        this.rule = rule;
+        this.detailsMap = detailsMap;
+        this.details = JsonUtil.toJson(detailsMap);
+    }
+
+    public Rule(String dslType, DqType dqType, String rule,
+                String inDataFrameName, String outDataFrameName,
+                Map<String, Object> detailsMap,
+                List<Map<String, Object>> outList)
+            throws JsonProcessingException {
+        this(dslType, dqType, rule, detailsMap);
+        this.inDataFrameName = inDataFrameName;
+        this.outDataFrameName = outDataFrameName;
+        this.outList = outList;
+    }
 
     @JsonProperty("dsl.type")
     public String getDslType() {
@@ -185,39 +209,13 @@ public class Rule extends AbstractAuditableEntity {
     public void load() throws IOException {
         if (!StringUtils.isEmpty(details)) {
             this.detailsMap = JsonUtil.toEntity(
-                details, new TypeReference<Map<String, Object>>() {
-                });
+                    details, new TypeReference<Map<String, Object>>() {
+                    });
         }
         if (!StringUtils.isEmpty(out)) {
             this.outList = JsonUtil.toEntity(
-                out, new TypeReference<List<Map<String, Object>>>() {
-                });
+                    out, new TypeReference<List<Map<String, Object>>>() {
+                    });
         }
-    }
-
-    public Rule() {
-    }
-
-    public Rule(String dslType,
-                DqType dqType,
-                String rule,
-                Map<String, Object> detailsMap)
-        throws JsonProcessingException {
-        this.dslType = dslType;
-        this.dqType = dqType;
-        this.rule = rule;
-        this.detailsMap = detailsMap;
-        this.details = JsonUtil.toJson(detailsMap);
-    }
-
-    public Rule(String dslType, DqType dqType, String rule,
-                String inDataFrameName, String outDataFrameName,
-                Map<String, Object> detailsMap,
-                List<Map<String, Object>> outList)
-        throws JsonProcessingException {
-        this(dslType, dqType, rule, detailsMap);
-        this.inDataFrameName = inDataFrameName;
-        this.outDataFrameName = outDataFrameName;
-        this.outList = outList;
     }
 }

@@ -20,10 +20,9 @@ under the License.
 package org.apache.griffin.core.exception;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import org.springframework.http.HttpStatus;
 
 import java.util.Date;
-
-import org.springframework.http.HttpStatus;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class GriffinExceptionResponse {
@@ -35,7 +34,6 @@ public class GriffinExceptionResponse {
     private String message;
     private String exception;
     private String path;
-
 
     GriffinExceptionResponse(HttpStatus status, GriffinExceptionMessage message,
                              String path) {

@@ -19,9 +19,9 @@ under the License.
 
 package org.apache.griffin.core.metric.model;
 
-import java.util.List;
-
 import org.apache.griffin.core.measure.entity.DqType;
+
+import java.util.List;
 
 public class Metric {
 

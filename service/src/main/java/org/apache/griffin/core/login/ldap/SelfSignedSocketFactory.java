@@ -19,6 +19,8 @@ under the License.
 
 package org.apache.griffin.core.login.ldap;
 
+import org.apache.griffin.core.exception.GriffinException;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -30,8 +32,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-
-import org.apache.griffin.core.exception.GriffinException;
 
 /**
  * SocketFactory ignoring insecure (self-signed, expired) certificates.
@@ -45,7 +45,7 @@ public class SelfSignedSocketFactory extends SocketFactory {
 
     private SelfSignedSocketFactory() throws Exception {
         SSLContext ctx = SSLContext.getInstance("TLS");
-        ctx.init(null, new TrustManager[]{new NoopTrustManager()}, null);
+        ctx.init(null, new TrustManager[] {new NoopTrustManager()}, null);
         sf = ctx.getSocketFactory();
     }
 
@@ -57,21 +57,6 @@ public class SelfSignedSocketFactory extends SocketFactory {
             return new SelfSignedSocketFactory();
         } catch (Exception e) {
             throw new GriffinException.ServiceException("Failed to create socket factory", e);
-        }
-    }
-
-    /**
-     * Insecure trust manager accepting any client and server certificates.
-     */
-    public static class NoopTrustManager implements X509TrustManager {
-        public void checkClientTrusted(X509Certificate[] xcs, String string) throws CertificateException {
-        }
-
-        public void checkServerTrusted(X509Certificate[] xcs, String string) throws CertificateException {
-        }
-
-        public X509Certificate[] getAcceptedIssuers() {
-            return new java.security.cert.X509Certificate[0];
         }
     }
 
@@ -98,5 +83,20 @@ public class SelfSignedSocketFactory extends SocketFactory {
     @Override
     public Socket createSocket(InetAddress inetAddress, int i, InetAddress inetAddress1, int i1) throws IOException {
         return sf.createSocket(inetAddress, i, inetAddress1, i1);
+    }
+
+    /**
+     * Insecure trust manager accepting any client and server certificates.
+     */
+    public static class NoopTrustManager implements X509TrustManager {
+        public void checkClientTrusted(X509Certificate[] xcs, String string) throws CertificateException {
+        }
+
+        public void checkServerTrusted(X509Certificate[] xcs, String string) throws CertificateException {
+        }
+
+        public X509Certificate[] getAcceptedIssuers() {
+            return new java.security.cert.X509Certificate[0];
+        }
     }
 }

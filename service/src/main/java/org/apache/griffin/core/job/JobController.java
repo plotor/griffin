@@ -19,10 +19,6 @@ under the License.
 
 package org.apache.griffin.core.job;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.griffin.core.job.entity.AbstractJob;
 import org.apache.griffin.core.job.entity.JobHealth;
 import org.apache.griffin.core.job.entity.JobInstanceBean;
@@ -42,6 +38,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1")
 public class JobController {
@@ -51,7 +51,7 @@ public class JobController {
 
     @RequestMapping(value = "/jobs", method = RequestMethod.GET)
     public List<AbstractJob> getJobs(@RequestParam(value = "type",
-        defaultValue = "") String type) {
+            defaultValue = "") String type) {
         return jobService.getAliveJobs(type);
     }
 
@@ -69,30 +69,30 @@ public class JobController {
     @RequestMapping(value = "/jobs/{id}", method = RequestMethod.PUT)
     @ResponseStatus(HttpStatus.OK)
     public AbstractJob onActions(
-        @PathVariable("id") Long jobId,
-        @RequestParam String action) throws Exception {
+            @PathVariable("id") Long jobId,
+            @RequestParam String action) throws Exception {
         return jobService.onAction(jobId, action);
     }
 
     @RequestMapping(value = "/jobs", method = RequestMethod.DELETE)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteJob(@RequestParam("jobName") String jobName)
-        throws SchedulerException {
+            throws SchedulerException {
         jobService.deleteJob(jobName);
     }
 
     @RequestMapping(value = "/jobs/{id}", method = RequestMethod.DELETE)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteJob(@PathVariable("id") Long id)
-        throws SchedulerException {
+            throws SchedulerException {
         jobService.deleteJob(id);
     }
 
     @RequestMapping(value = "/jobs/instances", method = RequestMethod.GET)
     public List<JobInstanceBean> findInstancesOfJob(
-        @RequestParam("jobId") Long id,
-        @RequestParam("page") int page,
-        @RequestParam("size") int size) {
+            @RequestParam("jobId") Long id,
+            @RequestParam("page") int page,
+            @RequestParam("size") int size) {
         return jobService.findInstancesOfJob(id, page, size);
     }
 
@@ -108,17 +108,17 @@ public class JobController {
 
     @RequestMapping(path = "/jobs/download", method = RequestMethod.GET)
     public ResponseEntity<Resource> download(
-        @RequestParam("jobName") String jobName,
-        @RequestParam("ts") long timestamp)
-        throws Exception {
+            @RequestParam("jobName") String jobName,
+            @RequestParam("ts") long timestamp)
+            throws Exception {
         String path = jobService.getJobHdfsSinksPath(jobName, timestamp);
         InputStreamResource resource = new InputStreamResource(
-            FSUtil.getMissSampleInputStream(path));
+                FSUtil.getMissSampleInputStream(path));
         return ResponseEntity.ok().
-            header("content-disposition",
-                "attachment; filename = sampleMissingData.json")
-            .contentType(MediaType.APPLICATION_OCTET_STREAM)
-            .body(resource);
+                header("content-disposition",
+                        "attachment; filename = sampleMissingData.json")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
     }
 
     @RequestMapping(value = "/jobs/trigger/{id}", method = RequestMethod.POST)

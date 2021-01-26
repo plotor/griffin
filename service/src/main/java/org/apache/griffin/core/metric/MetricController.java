@@ -19,9 +19,6 @@ under the License.
 
 package org.apache.griffin.core.metric;
 
-import java.util.List;
-import java.util.Map;
-
 import org.apache.griffin.core.metric.model.Metric;
 import org.apache.griffin.core.metric.model.MetricValue;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +31,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -49,27 +49,27 @@ public class MetricController {
 
     @RequestMapping(value = "/metrics/values", method = RequestMethod.GET)
     public List<MetricValue> getMetricValues(@RequestParam("metricName")
-                                                 String metricName,
+                                                     String metricName,
                                              @RequestParam("size") int size,
                                              @RequestParam(value = "offset",
-                                                 defaultValue = "0")
-                                                 int offset,
+                                                     defaultValue = "0")
+                                                     int offset,
                                              @RequestParam(value = "tmst",
-                                                 defaultValue = "0")
-                                                 long tmst) {
+                                                     defaultValue = "0")
+                                                     long tmst) {
         return metricService.getMetricValues(metricName, offset, size, tmst);
     }
 
     @RequestMapping(value = "/metrics/values", method = RequestMethod.POST)
     public ResponseEntity<?> addMetricValues(@RequestBody List<MetricValue>
-                                                 values) {
+                                                     values) {
         return metricService.addMetricValues(values);
     }
 
     @RequestMapping(value = "/metrics/values", method = RequestMethod.DELETE)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<?> deleteMetricValues(@RequestParam("metricName")
-                                                    String metricName) {
+                                                        String metricName) {
         return metricService.deleteMetricValues(metricName);
     }
 

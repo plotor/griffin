@@ -19,7 +19,6 @@ under the License.
 
 package org.apache.griffin.core.measure.repo;
 
-
 import org.apache.griffin.core.job.repo.BaseJpaRepository;
 import org.apache.griffin.core.measure.entity.Measure;
 import org.springframework.data.jpa.repository.Query;
@@ -36,7 +35,7 @@ public interface MeasureRepo<T extends Measure> extends BaseJpaRepository<T, Lon
     /**
      * search repository by name and deletion state
      *
-     * @param name    query condition
+     * @param name query condition
      * @param deleted query condition
      * @return measure collection
      */
@@ -53,7 +52,7 @@ public interface MeasureRepo<T extends Measure> extends BaseJpaRepository<T, Lon
     /**
      * search repository by owner and deletion state
      *
-     * @param owner   query condition
+     * @param owner query condition
      * @param deleted query condition
      * @return measure collection
      */
@@ -62,7 +61,7 @@ public interface MeasureRepo<T extends Measure> extends BaseJpaRepository<T, Lon
     /**
      * search repository by id and deletion state
      *
-     * @param id      query condition
+     * @param id query condition
      * @param deleted query condition
      * @return measure collection
      */
@@ -82,7 +81,7 @@ public interface MeasureRepo<T extends Measure> extends BaseJpaRepository<T, Lon
      * search repository by organization and deletion state
      *
      * @param organization query condition
-     * @param deleted      query condition
+     * @param deleted query condition
      * @return organization collection
      */
     @Query("select m.name from #{#entityName} m "

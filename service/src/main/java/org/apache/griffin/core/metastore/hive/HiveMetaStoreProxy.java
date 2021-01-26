@@ -19,8 +19,6 @@ under the License.
 
 package org.apache.griffin.core.metastore.hive;
 
-import javax.annotation.PreDestroy;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -30,10 +28,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PreDestroy;
+
 @Component
 public class HiveMetaStoreProxy {
     private static final Logger LOGGER = LoggerFactory
-        .getLogger(HiveMetaStoreProxy.class);
+            .getLogger(HiveMetaStoreProxy.class);
 
     @Value("${hive.metastore.uris}")
     private String uris;
@@ -60,7 +60,7 @@ public class HiveMetaStoreProxy {
         HiveConf hiveConf = new HiveConf();
         hiveConf.set("hive.metastore.local", "false");
         hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES,
-            3);
+                3);
         hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, uris);
         hiveConf.setIntVar(HiveConf.ConfVars.HMSHANDLERATTEMPTS, attempts);
         hiveConf.setVar(HiveConf.ConfVars.HMSHANDLERINTERVAL, interval);

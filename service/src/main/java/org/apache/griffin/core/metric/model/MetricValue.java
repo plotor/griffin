@@ -43,7 +43,6 @@ public class MetricValue {
         this.metadata = Collections.emptyMap();
     }
 
-
     public MetricValue(String name, Long tmst, Map<String, Object> metadata, Map<String, Object> value) {
         this.name = name;
         this.tmst = tmst;
@@ -84,25 +83,25 @@ public class MetricValue {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        MetricValue that = (MetricValue) o;
-        return Objects.equals(name, that.name) &&
-            Objects.equals(tmst, that.tmst) &&
-            Objects.equals(metadata, that.metadata) &&
-            Objects.equals(value, that.value);
-    }
-
-    @Override
     public int hashCode() {
         return Objects.hash(name, tmst, metadata, value);
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MetricValue that = (MetricValue) o;
+        return Objects.equals(name, that.name) &&
+                Objects.equals(tmst, that.tmst) &&
+                Objects.equals(metadata, that.metadata) &&
+                Objects.equals(value, that.value);
+    }
+
+    @Override
     public String toString() {
         return String.format(
-            "MetricValue{name=%s, ts=%s, meta=%s, value=%s}",
-            name, tmst, metadata, value);
+                "MetricValue{name=%s, ts=%s, meta=%s, value=%s}",
+                name, tmst, metadata, value);
     }
 }

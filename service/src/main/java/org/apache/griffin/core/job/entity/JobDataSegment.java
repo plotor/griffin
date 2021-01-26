@@ -20,6 +20,10 @@ under the License.
 package org.apache.griffin.core.job.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang.StringUtils;
+import org.apache.griffin.core.measure.entity.AbstractAuditableEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -28,18 +32,13 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.NotNull;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.griffin.core.measure.entity.AbstractAuditableEntity;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 @Entity
 public class JobDataSegment extends AbstractAuditableEntity {
 
     private static final long serialVersionUID = -9056531122243340484L;
 
     private static final Logger LOGGER = LoggerFactory
-        .getLogger(JobDataSegment.class);
+            .getLogger(JobDataSegment.class);
 
     @NotNull
     private String dataConnectorName;
@@ -47,9 +46,24 @@ public class JobDataSegment extends AbstractAuditableEntity {
     private boolean asTsBaseline = false;
 
     @OneToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST,
-        CascadeType.REMOVE, CascadeType.MERGE})
+            CascadeType.REMOVE, CascadeType.MERGE})
     @JoinColumn(name = "segment_range_id")
     private SegmentRange segmentRange = new SegmentRange();
+
+    public JobDataSegment() {
+    }
+
+    public JobDataSegment(String dataConnectorName, boolean baseline) {
+        this.dataConnectorName = dataConnectorName;
+        this.asTsBaseline = baseline;
+    }
+
+    public JobDataSegment(String dataConnectorName, boolean baseline,
+                          SegmentRange segmentRange) {
+        this.dataConnectorName = dataConnectorName;
+        this.asTsBaseline = baseline;
+        this.segmentRange = segmentRange;
+    }
 
     @JsonProperty("as.baseline")
     public boolean isAsTsBaseline() {
@@ -77,24 +91,9 @@ public class JobDataSegment extends AbstractAuditableEntity {
     public void setDataConnectorName(String dataConnectorName) {
         if (StringUtils.isEmpty(dataConnectorName)) {
             LOGGER.warn(" Data connector name is invalid. " +
-                "Please check your connector name.");
+                    "Please check your connector name.");
             throw new NullPointerException();
         }
         this.dataConnectorName = dataConnectorName;
-    }
-
-    public JobDataSegment() {
-    }
-
-    public JobDataSegment(String dataConnectorName, boolean baseline) {
-        this.dataConnectorName = dataConnectorName;
-        this.asTsBaseline = baseline;
-    }
-
-    public JobDataSegment(String dataConnectorName, boolean baseline,
-                          SegmentRange segmentRange) {
-        this.dataConnectorName = dataConnectorName;
-        this.asTsBaseline = baseline;
-        this.segmentRange = segmentRange;
     }
 }

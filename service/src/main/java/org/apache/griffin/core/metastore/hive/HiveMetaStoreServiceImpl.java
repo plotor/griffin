@@ -20,12 +20,6 @@ under the License.
 package org.apache.griffin.core.metastore.hive;
 
 import com.google.common.collect.Lists;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.slf4j.Logger;
@@ -40,6 +34,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @Qualifier(value = "metastoreSvc")
@@ -47,14 +45,13 @@ import org.springframework.util.StringUtils;
 public class HiveMetaStoreServiceImpl implements HiveMetaStoreService {
 
     private static final Logger LOGGER = LoggerFactory
-        .getLogger(HiveMetaStoreService.class);
+            .getLogger(HiveMetaStoreService.class);
 
     @Autowired(required = false)
     private IMetaStoreClient client = null;
 
     @Value("${hive.metastore.dbname}")
     private String defaultDbName;
-
 
     public HiveMetaStoreServiceImpl() {
     }
@@ -70,7 +67,7 @@ public class HiveMetaStoreServiceImpl implements HiveMetaStoreService {
         try {
             if (client == null) {
                 LOGGER.warn("Hive client is null. " +
-                    "Please check your hive config.");
+                        "Please check your hive config.");
                 return new ArrayList<>();
             }
             results = client.getAllDatabases();
@@ -81,7 +78,6 @@ public class HiveMetaStoreServiceImpl implements HiveMetaStoreService {
         return results;
     }
 
-
     @Override
     @Cacheable(unless = "#result==null")
     public Iterable<String> getAllTableNames(String dbName) {
@@ -89,7 +85,7 @@ public class HiveMetaStoreServiceImpl implements HiveMetaStoreService {
         try {
             if (client == null) {
                 LOGGER.warn("Hive client is null. " +
-                    "Please check your hive config.");
+                        "Please check your hive config.");
                 return new ArrayList<>();
             }
             results = client.getAllTables(getUseDbName(dbName));
@@ -101,13 +97,6 @@ public class HiveMetaStoreServiceImpl implements HiveMetaStoreService {
         return results;
     }
 
-
-    @Override
-    @Cacheable(unless = "#result==null || #result.isEmpty()")
-    public List<Table> getAllTable(String db) {
-        return getTables(db);
-    }
-
     @Override
     @Cacheable(unless = "#result==null || #result.isEmpty()")
     public Map<String, List<String>> getAllTableNames() {
@@ -116,6 +105,12 @@ public class HiveMetaStoreServiceImpl implements HiveMetaStoreService {
             result.put(dbName, Lists.newArrayList(getAllTableNames(dbName)));
         }
         return result;
+    }
+
+    @Override
+    @Cacheable(unless = "#result==null || #result.isEmpty()")
+    public List<Table> getAllTable(String db) {
+        return getTables(db);
     }
 
     @Override
@@ -141,7 +136,6 @@ public class HiveMetaStoreServiceImpl implements HiveMetaStoreService {
         return results;
     }
 
-
     @Override
     @Cacheable(unless = "#result==null")
     public Table getTable(String dbName, String tableName) {
@@ -149,24 +143,24 @@ public class HiveMetaStoreServiceImpl implements HiveMetaStoreService {
         try {
             if (client == null) {
                 LOGGER.warn("Hive client is null. " +
-                    "Please check your hive config.");
+                        "Please check your hive config.");
                 return null;
             }
             result = client.getTable(getUseDbName(dbName), tableName);
         } catch (Exception e) {
             reconnect();
             LOGGER.error("Exception fetching table info : {}. {}", tableName,
-                e);
+                    e);
         }
         return result;
     }
 
     @Scheduled(fixedRateString =
-        "${cache.evict.hive.fixedRate.in.milliseconds}")
+            "${cache.evict.hive.fixedRate.in.milliseconds}")
     @CacheEvict(
-        cacheNames = "hive",
-        allEntries = true,
-        beforeInvocation = true)
+            cacheNames = "hive",
+            allEntries = true,
+            beforeInvocation = true)
     public void evictHiveCache() {
         LOGGER.info("Evict hive cache");
         // TODO: calls within same bean are not cached -- this call is not populating anything
@@ -175,14 +169,13 @@ public class HiveMetaStoreServiceImpl implements HiveMetaStoreService {
 //                "automatically refresh hive tables cache.");
     }
 
-
     private List<Table> getTables(String db) {
         String useDbName = getUseDbName(db);
         List<Table> allTables = new ArrayList<>();
         try {
             if (client == null) {
                 LOGGER.warn("Hive client is null. " +
-                    "Please check your hive config.");
+                        "Please check your hive config.");
                 return allTables;
             }
             Iterable<String> tables = client.getAllTables(useDbName);

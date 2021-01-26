@@ -19,11 +19,11 @@ under the License.
 
 package org.apache.griffin.core.metric;
 
-import java.io.IOException;
-import java.util.List;
-
 import org.apache.griffin.core.metric.model.MetricValue;
 import org.springframework.http.ResponseEntity;
+
+import java.io.IOException;
+import java.util.List;
 
 public interface MetricStore {
 
@@ -31,7 +31,7 @@ public interface MetricStore {
                                       long tmst) throws IOException;
 
     ResponseEntity<?> addMetricValues(List<MetricValue> metricValues)
-        throws IOException;
+            throws IOException;
 
     ResponseEntity<?> deleteMetricValues(String metricName) throws IOException;
 

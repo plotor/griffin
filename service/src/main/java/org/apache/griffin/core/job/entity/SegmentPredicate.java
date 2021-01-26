@@ -23,6 +23,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.apache.commons.lang.StringUtils;
+import org.apache.griffin.core.measure.entity.AbstractAuditableEntity;
+import org.apache.griffin.core.util.JsonUtil;
 
 import java.io.IOException;
 import java.util.Map;
@@ -31,10 +34,6 @@ import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Transient;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.griffin.core.measure.entity.AbstractAuditableEntity;
-import org.apache.griffin.core.util.JsonUtil;
 
 @Entity
 public class SegmentPredicate extends AbstractAuditableEntity {
@@ -48,6 +47,15 @@ public class SegmentPredicate extends AbstractAuditableEntity {
 
     @Transient
     private Map<String, Object> configMap;
+
+    public SegmentPredicate() {
+    }
+
+    public SegmentPredicate(String type, Map<String, String> configMap)
+            throws JsonProcessingException {
+        this.type = type;
+        this.config = JsonUtil.toJson(configMap);
+    }
 
     public String getType() {
         return type;
@@ -86,17 +94,8 @@ public class SegmentPredicate extends AbstractAuditableEntity {
     public void load() throws IOException {
         if (!StringUtils.isEmpty(config)) {
             this.configMap = JsonUtil.toEntity(config,
-                new TypeReference<Map<String, Object>>() {
-                });
+                    new TypeReference<Map<String, Object>>() {
+                    });
         }
-    }
-
-    public SegmentPredicate() {
-    }
-
-    public SegmentPredicate(String type, Map<String, String> configMap)
-        throws JsonProcessingException {
-        this.type = type;
-        this.config = JsonUtil.toJson(configMap);
     }
 }

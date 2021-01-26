@@ -19,27 +19,13 @@ under the License.
 
 package org.apache.griffin.core.job;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import org.apache.commons.collections.map.HashedMap;
 import static org.apache.griffin.core.config.PropertiesConfig.livyConfMap;
 import static org.apache.griffin.core.job.entity.LivySessionStates.State.NOT_FOUND;
 import static org.apache.griffin.core.util.JsonUtil.toEntity;
 import static org.apache.griffin.core.util.JsonUtil.toJsonWithFormat;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicInteger;
-import javax.annotation.PostConstruct;
-
-import org.apache.commons.collections.map.HashedMap;
 import org.quartz.JobDetail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,11 +40,23 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
+import javax.annotation.PostConstruct;
+
 @Component
 public class LivyTaskSubmitHelper {
+    public static final int DEFAULT_QUEUE_SIZE = 20000;
     private static final Logger LOGGER = LoggerFactory.getLogger(LivyTaskSubmitHelper.class);
     private static final String REQUEST_BY_HEADER = "X-Requested-By";
-    public static final int DEFAULT_QUEUE_SIZE = 20000;
     private static final int SLEEP_TIME = 300;
 
     @Autowired
@@ -80,6 +78,10 @@ public class LivyTaskSubmitHelper {
     @Autowired
     private Environment env;
 
+    public LivyTaskSubmitHelper() {
+        this.workerNamePre = "livy-task-submit-worker";
+    }
+
     /**
      * Initialize related parameters and open consumer threads.
      */
@@ -88,10 +90,6 @@ public class LivyTaskSubmitHelper {
         startWorker();
         uri = env.getProperty("livy.uri");
         LOGGER.info("Livy uri : {}", uri);
-    }
-
-    public LivyTaskSubmitHelper() {
-        this.workerNamePre = "livy-task-submit-worker";
     }
 
     /**
@@ -123,37 +121,7 @@ public class LivyTaskSubmitHelper {
 
         queue.add(jd);
         LOGGER.info("add_task_to_waiting_queue_success, workerNamePre: {}, task: {}",
-            workerNamePre, jd);
-    }
-
-    /**
-     * Consumer thread.
-     */
-    class TaskInner implements Runnable {
-        private ExecutorService es;
-
-        public TaskInner(ExecutorService es) {
-            this.es = es;
-        }
-
-        public void run() {
-            long insertTime = System.currentTimeMillis();
-            while (true) {
-                try {
-                    if (curConcurrentTaskNum.get() < maxConcurrentTaskCount
-                        && (System.currentTimeMillis() - insertTime) >= batchIntervalSecond * 1000) {
-                        JobDetail jd = queue.take();
-                        sparkSubmitJob.saveJobInstance(jd);
-                        insertTime = System.currentTimeMillis();
-                    } else {
-                        Thread.sleep(SLEEP_TIME);
-                    }
-                } catch (Exception e) {
-                    LOGGER.error("Async_worker_doTask_failed, {}", e.getMessage(), e);
-                    es.execute(this);
-                }
-            }
-        }
+                workerNamePre, jd);
     }
 
     /**
@@ -181,12 +149,12 @@ public class LivyTaskSubmitHelper {
     }
 
     protected Map<String, Object> retryLivyGetAppId(String result, int appIdRetryCount)
-        throws IOException {
+            throws IOException {
 
         int retryCount = appIdRetryCount;
         TypeReference<HashMap<String, Object>> type =
-            new TypeReference<HashMap<String, Object>>() {
-            };
+                new TypeReference<HashMap<String, Object>>() {
+                };
         Map<String, Object> resultMap = toEntity(result, type);
 
         if (retryCount <= 0) {
@@ -220,7 +188,7 @@ public class LivyTaskSubmitHelper {
     }
 
     private Map<String, Object> getResultByLivyId(Object livyBatchesId, TypeReference<HashMap<String, Object>> type)
-        throws IOException {
+            throws IOException {
         Map<String, Object> resultMap = new HashedMap();
         String livyUri = uri + "/" + livyBatchesId;
         String result = getFromLivy(livyUri);
@@ -251,8 +219,8 @@ public class LivyTaskSubmitHelper {
                 LOGGER.info(result);
             } catch (HttpClientErrorException e) {
                 LOGGER.error("Post to livy ERROR. \n  response status : " + e.getMessage()
-                    + "\n  response header : " + e.getResponseHeaders()
-                    + "\n  response body : " + e.getResponseBodyAsString());
+                        + "\n  response header : " + e.getResponseHeaders()
+                        + "\n  response body : " + e.getResponseBodyAsString());
             } catch (JsonProcessingException e) {
                 LOGGER.error("Json Parsing failed, {}", e.getMessage(), e);
             } catch (Exception e) {
@@ -271,8 +239,8 @@ public class LivyTaskSubmitHelper {
                 springEntity = new HttpEntity<>(toJsonWithFormat(livyConfMap), headers);
             } catch (HttpClientErrorException e) {
                 LOGGER.error("Post to livy ERROR. \n  response status : " + e.getMessage()
-                    + "\n  response header : " + e.getResponseHeaders()
-                    + "\n  response body : " + e.getResponseBodyAsString());
+                        + "\n  response header : " + e.getResponseHeaders()
+                        + "\n  response body : " + e.getResponseBodyAsString());
             } catch (JsonProcessingException e) {
                 LOGGER.error("Json Parsing failed, {}", e.getMessage(), e);
             } catch (Exception e) {
@@ -331,6 +299,36 @@ public class LivyTaskSubmitHelper {
 
             KerberosRestTemplate restTemplate = new KerberosRestTemplate(keyTabLocation, userPrincipal);
             restTemplate.delete(uri);
+        }
+    }
+
+    /**
+     * Consumer thread.
+     */
+    class TaskInner implements Runnable {
+        private ExecutorService es;
+
+        public TaskInner(ExecutorService es) {
+            this.es = es;
+        }
+
+        public void run() {
+            long insertTime = System.currentTimeMillis();
+            while (true) {
+                try {
+                    if (curConcurrentTaskNum.get() < maxConcurrentTaskCount
+                            && (System.currentTimeMillis() - insertTime) >= batchIntervalSecond * 1000) {
+                        JobDetail jd = queue.take();
+                        sparkSubmitJob.saveJobInstance(jd);
+                        insertTime = System.currentTimeMillis();
+                    } else {
+                        Thread.sleep(SLEEP_TIME);
+                    }
+                } catch (Exception e) {
+                    LOGGER.error("Async_worker_doTask_failed, {}", e.getMessage(), e);
+                    es.execute(this);
+                }
+            }
         }
     }
 }

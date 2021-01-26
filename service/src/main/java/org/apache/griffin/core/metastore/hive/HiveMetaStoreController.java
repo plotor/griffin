@@ -16,11 +16,8 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 */
+
 package org.apache.griffin.core.metastore.hive;
-
-
-import java.util.List;
-import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +26,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/metadata/hive")
@@ -42,7 +42,6 @@ public class HiveMetaStoreController {
     public Iterable<String> getAllDatabases() {
         return hiveMetaStoreService.getAllDatabases();
     }
-
 
     @RequestMapping(value = "/tables/names", method = RequestMethod.GET)
     public Iterable<String> getAllTableNames(@RequestParam("db") String dbName) {
@@ -69,6 +68,5 @@ public class HiveMetaStoreController {
                           @RequestParam("table") String tableName) {
         return hiveMetaStoreService.getTable(dbName, tableName);
     }
-
 
 }

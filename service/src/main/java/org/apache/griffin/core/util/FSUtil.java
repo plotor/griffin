@@ -19,19 +19,11 @@ under the License.
 
 package org.apache.griffin.core.util;
 
-import static org.apache.griffin.core.exception.GriffinExceptionMessage.HDFS_FILE_NOT_EXIST;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.griffin.core.exception.GriffinException;
+import static org.apache.griffin.core.exception.GriffinExceptionMessage.HDFS_FILE_NOT_EXIST;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -42,6 +34,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class FSUtil {
@@ -54,6 +53,10 @@ public class FSUtil {
     private static FileSystem fileSystem;
 
     private static FileSystem defaultFS = getDefaultFileSystem();
+
+    public FSUtil(@Value("${fs.defaultFS}") String defaultName) {
+        fsDefaultName = defaultName;
+    }
 
     private static FileSystem getDefaultFileSystem() {
         FileSystem fs = null;
@@ -71,10 +74,6 @@ public class FSUtil {
             initFileSystem();
         }
         return fileSystem;
-    }
-
-    public FSUtil(@Value("${fs.defaultFS}") String defaultName) {
-        fsDefaultName = defaultName;
     }
 
     private static void initFileSystem() {
@@ -100,7 +99,6 @@ public class FSUtil {
         }
 
     }
-
 
     /**
      * list all sub dir of a dir
@@ -174,12 +172,12 @@ public class FSUtil {
     }
 
     public static InputStream getSampleInputStream(String path)
-        throws IOException {
+            throws IOException {
         checkHDFSConf();
         if (isFileExist(path)) {
             FSDataInputStream missingData = fileSystem.open(new Path(path));
             BufferedReader bufReader = new BufferedReader(
-                new InputStreamReader(missingData, Charsets.UTF_8));
+                    new InputStreamReader(missingData, Charsets.UTF_8));
             try {
                 String line = null;
                 int rowCnt = 0;
@@ -206,16 +204,16 @@ public class FSUtil {
     private static void checkHDFSConf() {
         if (getFileSystem() == null) {
             throw new NullPointerException("FileSystem is null. " +
-                "Please check your hdfs config default name.");
+                    "Please check your hdfs config default name.");
         }
     }
 
     public static String getFirstMissRecordPath(String hdfsDir)
-        throws Exception {
+            throws Exception {
         List<FileStatus> fileList = listFileStatus(hdfsDir);
         for (int i = 0; i < fileList.size(); i++) {
             if (fileList.get(i).getPath().toUri().toString().toLowerCase()
-                .contains("missrecord")) {
+                    .contains("missrecord")) {
                 return fileList.get(i).getPath().toUri().toString();
             }
         }
@@ -223,12 +221,12 @@ public class FSUtil {
     }
 
     public static InputStream getMissSampleInputStream(String path)
-        throws Exception {
+            throws Exception {
         List<String> subDirList = listSubDir(path);
         //FIXME: only handle 1-sub dir here now
         for (int i = 0; i < subDirList.size(); i++) {
             return getSampleInputStream(getFirstMissRecordPath(
-                subDirList.get(i)));
+                    subDirList.get(i)));
         }
         return getSampleInputStream(getFirstMissRecordPath(path));
     }

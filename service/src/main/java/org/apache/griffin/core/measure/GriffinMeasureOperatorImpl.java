@@ -19,11 +19,10 @@ under the License.
 
 package org.apache.griffin.core.measure;
 
-import static org.apache.griffin.core.util.MeasureUtil.validateMeasure;
-
 import org.apache.griffin.core.job.JobServiceImpl;
 import org.apache.griffin.core.measure.entity.Measure;
 import org.apache.griffin.core.measure.repo.MeasureRepo;
+import static org.apache.griffin.core.util.MeasureUtil.validateMeasure;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -40,7 +39,6 @@ public class GriffinMeasureOperatorImpl implements MeasureOperator {
         this.measureRepo = measureRepo;
         this.jobService = jobService;
     }
-
 
     @Override
     public Measure create(Measure measure) {

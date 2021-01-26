@@ -27,11 +27,6 @@ import javax.persistence.Entity;
 public class StreamingJob extends AbstractJob {
     private static final long serialVersionUID = 3292253488392308505L;
 
-    @Override
-    public String getType() {
-        return JobType.STREAMING.getName();
-    }
-
     public StreamingJob() {
     }
 
@@ -39,5 +34,10 @@ public class StreamingJob extends AbstractJob {
                         String group, boolean deleted) {
         super(measureId, jobName, name, group, deleted);
         this.metricName = jobName;
+    }
+
+    @Override
+    public String getType() {
+        return JobType.STREAMING.getName();
     }
 }

@@ -19,14 +19,12 @@ under the License.
 
 package org.apache.griffin.core.util;
 
-import static org.apache.griffin.core.job.entity.LivySessionStates.State.DEAD;
-
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.griffin.core.job.entity.JobInstanceBean;
 import org.apache.griffin.core.job.entity.LivySessionStates;
+import static org.apache.griffin.core.job.entity.LivySessionStates.State.DEAD;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -35,13 +33,13 @@ import org.springframework.web.client.RestTemplate;
 
 public class YarnNetUtil {
     private static final Logger LOGGER = LoggerFactory
-        .getLogger(YarnNetUtil.class);
+            .getLogger(YarnNetUtil.class);
     private static RestTemplate restTemplate = new RestTemplate();
 
     /**
      * delete app task scheduling by yarn.
      *
-     * @param url   prefix part of whole url
+     * @param url prefix part of whole url
      * @param appId application id
      */
     public static void delete(String url, String appId) {
@@ -49,12 +47,12 @@ public class YarnNetUtil {
             if (appId != null) {
                 LOGGER.info("{} will delete by yarn", appId);
                 restTemplate.put(url + "ws/v1/cluster/apps/"
-                        + appId + "/state",
-                    "{\"state\": \"KILLED\"}");
+                                + appId + "/state",
+                        "{\"state\": \"KILLED\"}");
             }
         } catch (HttpClientErrorException e) {
             LOGGER.warn("client error {} from yarn: {}",
-                e.getMessage(), e.getResponseBodyAsString());
+                    e.getMessage(), e.getResponseBodyAsString());
         } catch (Exception e) {
             LOGGER.error("delete exception happens by yarn. {}", e);
         }
@@ -63,7 +61,7 @@ public class YarnNetUtil {
     /**
      * update app task scheduling by yarn.
      *
-     * @param url      prefix part of whole url
+     * @param url prefix part of whole url
      * @param instance job instance
      * @return
      */
@@ -78,7 +76,7 @@ public class YarnNetUtil {
             return true;
         } catch (HttpClientErrorException e) {
             LOGGER.warn("client error {} from yarn: {}",
-                e.getMessage(), e.getResponseBodyAsString());
+                    e.getMessage(), e.getResponseBodyAsString());
             if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
                 // in sync with Livy behavior, see com.cloudera.livy.utils.SparkYarnApp
                 instance.setState(DEAD);

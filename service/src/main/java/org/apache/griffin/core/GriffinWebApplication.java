@@ -16,6 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 */
+
 package org.apache.griffin.core;
 
 import org.apache.griffin.core.common.SimpleCORSFilter;
@@ -30,7 +31,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 public class GriffinWebApplication {
     private static final Logger LOGGER = LoggerFactory
-        .getLogger(GriffinWebApplication.class);
+            .getLogger(GriffinWebApplication.class);
 
     public static void main(String[] args) {
         SpringApplication.run(GriffinWebApplication.class, args);

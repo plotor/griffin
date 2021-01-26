@@ -24,6 +24,12 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.apache.griffin.core.job.entity.SegmentPredicate;
+import org.apache.griffin.core.util.JsonUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -43,68 +49,64 @@ import javax.persistence.PreUpdate;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
-import org.apache.griffin.core.job.entity.SegmentPredicate;
-import org.apache.griffin.core.util.JsonUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-
 @Entity
 public class DataConnector extends AbstractAuditableEntity {
     private static final long serialVersionUID = -4748881017029815594L;
 
     private final static Logger LOGGER = LoggerFactory
-        .getLogger(DataConnector.class);
-
-    public enum DataType {
-        /**
-         * There are three data source type which we support now.
-         */
-        HIVE,
-        KAFKA,
-        AVRO,
-        CUSTOM
-    }
-
+            .getLogger(DataConnector.class);
     @NotNull
     private String name;
-
     @Enumerated(EnumType.STRING)
     private DataType type;
-
     private String version;
-
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String dataFrameName;
-
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String dataUnit;
-
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String dataTimeZone;
-
     @JsonIgnore
     @Transient
     private String defaultDataUnit = "365000d";
-
     @JsonIgnore
     @Column(length = 20480)
     private String config;
-
     @Transient
     private Map<String, Object> configMap;
-
     @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST,
-        CascadeType.REMOVE, CascadeType.MERGE})
+            CascadeType.REMOVE, CascadeType.MERGE})
     @JoinColumn(name = "data_connector_id")
     private List<SegmentPredicate> predicates = new ArrayList<>();
-
     @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST,
-        CascadeType.REMOVE, CascadeType.MERGE})
+            CascadeType.REMOVE, CascadeType.MERGE})
     @JoinColumn(name = "pre_process_id")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<StreamingPreProcess> preProcess;
+
+    public DataConnector() {
+    }
+
+    public DataConnector(String name, DataType type, String version,
+                         String config, String dataFrameName)
+            throws IOException {
+        this.name = name;
+        this.type = type;
+        this.version = version;
+        this.config = config;
+        this.configMap = JsonUtil.toEntity(config,
+                new TypeReference<Map<String, Object>>() {
+                });
+        this.dataFrameName = dataFrameName;
+    }
+
+    public DataConnector(String name, String dataUnit, Map configMap,
+                         List<SegmentPredicate> predicates) {
+        this.name = name;
+        this.dataUnit = dataUnit;
+        this.configMap = configMap;
+        this.predicates = predicates;
+    }
 
     public List<SegmentPredicate> getPredicates() {
         return predicates;
@@ -132,12 +134,12 @@ public class DataConnector extends AbstractAuditableEntity {
         this.configMap = configMap;
     }
 
-    private void setConfig(String config) {
-        this.config = config;
-    }
-
     private String getConfig() {
         return config;
+    }
+
+    private void setConfig(String config) {
+        this.config = config;
     }
 
     @JsonProperty("dataframe.name")
@@ -215,42 +217,28 @@ public class DataConnector extends AbstractAuditableEntity {
     public void load() throws IOException {
         if (!StringUtils.isEmpty(config)) {
             this.configMap = JsonUtil.toEntity(config,
-                new TypeReference<Map<String, Object>>() {
-                });
+                    new TypeReference<Map<String, Object>>() {
+                    });
         }
-    }
-
-    public DataConnector() {
-    }
-
-    public DataConnector(String name, DataType type, String version,
-                         String config, String dataFrameName)
-        throws IOException {
-        this.name = name;
-        this.type = type;
-        this.version = version;
-        this.config = config;
-        this.configMap = JsonUtil.toEntity(config,
-            new TypeReference<Map<String, Object>>() {
-            });
-        this.dataFrameName = dataFrameName;
-    }
-
-    public DataConnector(String name, String dataUnit, Map configMap,
-                         List<SegmentPredicate> predicates) {
-        this.name = name;
-        this.dataUnit = dataUnit;
-        this.configMap = configMap;
-        this.predicates = predicates;
     }
 
     @Override
     public String toString() {
         return "DataConnector{" +
-            "name=" + name +
-            "type=" + type +
-            ", version='" + version + '\'' +
-            ", config=" + config +
-            '}';
+                "name=" + name +
+                "type=" + type +
+                ", version='" + version + '\'' +
+                ", config=" + config +
+                '}';
+    }
+
+    public enum DataType {
+        /**
+         * There are three data source type which we support now.
+         */
+        HIVE,
+        KAFKA,
+        AVRO,
+        CUSTOM
     }
 }

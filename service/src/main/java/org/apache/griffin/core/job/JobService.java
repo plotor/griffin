@@ -19,12 +19,12 @@ under the License.
 
 package org.apache.griffin.core.job;
 
-import java.util.List;
-
 import org.apache.griffin.core.job.entity.AbstractJob;
 import org.apache.griffin.core.job.entity.JobHealth;
 import org.apache.griffin.core.job.entity.JobInstanceBean;
 import org.quartz.SchedulerException;
+
+import java.util.List;
 
 public interface JobService {
 

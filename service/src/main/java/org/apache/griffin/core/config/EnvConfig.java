@@ -19,23 +19,21 @@ under the License.
 
 package org.apache.griffin.core.config;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import static org.apache.griffin.core.util.FileUtil.getFilePath;
 import static org.apache.griffin.core.util.JsonUtil.toEntity;
 import static org.apache.griffin.core.util.JsonUtil.toJsonWithFormat;
-
-import com.fasterxml.jackson.core.type.TypeReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ClassPathResource;
-
 public class EnvConfig {
     private static final Logger LOGGER = LoggerFactory
-        .getLogger(EnvConfig.class);
+            .getLogger(EnvConfig.class);
     public static String ENV_BATCH;
     public static String ENV_STREAMING;
 
@@ -47,7 +45,7 @@ public class EnvConfig {
      * @throws IOException io exception
      */
     private static String readEnvFromResource(String path)
-        throws IOException {
+            throws IOException {
         if (path == null) {
             LOGGER.warn("Parameter path is null.");
             return null;
@@ -75,7 +73,7 @@ public class EnvConfig {
      * @throws IOException io exception
      */
     private static String readEnvFromAbsolutePath(String path)
-        throws IOException {
+            throws IOException {
         if (path == null) {
             LOGGER.warn("Parameter path is null.");
             return null;
@@ -95,15 +93,15 @@ public class EnvConfig {
     /**
      * read batch env.
      *
-     * @param name        batch env name that you need to search
+     * @param name batch env name that you need to search
      * @param defaultPath If there is no target file in location directory,
-     *                    it'll read from default path.
-     * @param location    env path that you configure in application.properties
+     * it'll read from default path.
+     * @param location env path that you configure in application.properties
      * @return String
      * @throws IOException io exception
      */
     static String getBatchEnv(String name, String defaultPath, String location)
-        throws IOException {
+            throws IOException {
         if (ENV_BATCH != null) {
             return ENV_BATCH;
         }
@@ -121,7 +119,7 @@ public class EnvConfig {
     static String getStreamingEnv(String name,
                                   String defaultPath,
                                   String location)
-        throws IOException {
+            throws IOException {
         if (ENV_STREAMING != null) {
             return ENV_STREAMING;
         }

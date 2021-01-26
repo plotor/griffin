@@ -19,26 +19,24 @@ under the License.
 
 package org.apache.griffin.core.util;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.griffin.core.exception.GriffinException;
 import static org.apache.griffin.core.exception.GriffinExceptionMessage.INVALID_CONNECTOR_NAME;
 import static org.apache.griffin.core.exception.GriffinExceptionMessage.INVALID_MEASURE_PREDICATE;
 import static org.apache.griffin.core.exception.GriffinExceptionMessage.MISSING_METRIC_NAME;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.griffin.core.exception.GriffinException;
 import org.apache.griffin.core.job.entity.SegmentPredicate;
 import org.apache.griffin.core.job.factory.PredicatorFactory;
-import org.apache.griffin.core.measure.entity.DataConnector;
 import org.apache.griffin.core.measure.entity.DataSource;
 import org.apache.griffin.core.measure.entity.ExternalMeasure;
 import org.apache.griffin.core.measure.entity.GriffinMeasure;
 import org.apache.griffin.core.measure.entity.Measure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class MeasureUtil {
     private static final Logger LOGGER = LoggerFactory
@@ -88,7 +86,7 @@ public class MeasureUtil {
         Set<String> sets = new HashSet<>();
         List<DataSource> sources = measure.getDataSources();
         for (DataSource source : sources) {
-            if(source.getConnector() != null && source.getConnector().getName() != null){
+            if (source.getConnector() != null && source.getConnector().getName() != null) {
                 sets.add(source.getConnector().getName());
             }
         }

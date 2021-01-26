@@ -24,6 +24,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.griffin.core.util.JsonUtil;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,50 +47,58 @@ import javax.persistence.PreUpdate;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.griffin.core.util.JsonUtil;
-import org.springframework.util.StringUtils;
-
 /**
  * Measures processed on Griffin
  */
 @Entity
 public class GriffinMeasure extends Measure {
-    public enum ProcessType {
-        /**
-         * Currently we just support BATCH and STREAMING type
-         */
-        BATCH,
-        STREAMING
-    }
-
+    private static final long serialVersionUID = -475176898459647661L;
     @Enumerated(EnumType.STRING)
     private ProcessType processType;
-    private static final long serialVersionUID = -475176898459647661L;
-
     @Transient
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long timestamp;
-
     @JsonIgnore
     @Column(length = 1024)
     private String ruleDescription;
-
     @Transient
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Map<String, Object> ruleDescriptionMap;
-
     @NotNull
     @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST,
-        CascadeType.REMOVE, CascadeType.MERGE})
+            CascadeType.REMOVE, CascadeType.MERGE})
     @JoinColumn(name = "measure_id")
     private List<DataSource> dataSources = new ArrayList<>();
-
     @NotNull
     @OneToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST,
-        CascadeType.REMOVE, CascadeType.MERGE})
+            CascadeType.REMOVE, CascadeType.MERGE})
     @JoinColumn(name = "evaluate_rule_id")
     private EvaluateRule evaluateRule;
+
+    public GriffinMeasure() {
+        super();
+    }
+
+    public GriffinMeasure(String name, String owner,
+                          List<DataSource> dataSources,
+                          EvaluateRule evaluateRule,
+                          List<String> sinksList) {
+        this.name = name;
+        this.owner = owner;
+        this.dataSources = dataSources;
+        this.evaluateRule = evaluateRule;
+        setSinksList(sinksList);
+    }
+
+    public GriffinMeasure(Long measureId, String name, String owner,
+                          List<DataSource> dataSources,
+                          EvaluateRule evaluateRule) {
+        this.setId(measureId);
+        this.name = name;
+        this.owner = owner;
+        this.dataSources = dataSources;
+        this.evaluateRule = evaluateRule;
+    }
 
     @JsonProperty("process.type")
     public ProcessType getProcessType() {
@@ -117,7 +128,7 @@ public class GriffinMeasure extends Measure {
 
     public void setEvaluateRule(EvaluateRule evaluateRule) {
         if (evaluateRule == null || CollectionUtils.isEmpty(evaluateRule
-            .getRules())) {
+                .getRules())) {
             throw new NullPointerException("Evaluate rule can not be empty.");
         }
         this.evaluateRule = evaluateRule;
@@ -131,7 +142,6 @@ public class GriffinMeasure extends Measure {
     public void setRuleDescriptionMap(Map<String, Object> ruleDescriptionMap) {
         this.ruleDescriptionMap = ruleDescriptionMap;
     }
-
 
     private String getRuleDescription() {
         return ruleDescription;
@@ -149,36 +159,6 @@ public class GriffinMeasure extends Measure {
         this.timestamp = timestamp;
     }
 
-    @Override
-    public String getType() {
-        return "griffin";
-    }
-
-    public GriffinMeasure() {
-        super();
-    }
-
-    public GriffinMeasure(String name, String owner,
-                          List<DataSource> dataSources,
-                          EvaluateRule evaluateRule,
-                          List<String> sinksList) {
-        this.name = name;
-        this.owner = owner;
-        this.dataSources = dataSources;
-        this.evaluateRule = evaluateRule;
-        setSinksList(sinksList);
-    }
-
-    public GriffinMeasure(Long measureId, String name, String owner,
-                          List<DataSource> dataSources,
-                          EvaluateRule evaluateRule) {
-        this.setId(measureId);
-        this.name = name;
-        this.owner = owner;
-        this.dataSources = dataSources;
-        this.evaluateRule = evaluateRule;
-    }
-
     @PrePersist
     @PreUpdate
     public void save() throws JsonProcessingException {
@@ -193,8 +173,21 @@ public class GriffinMeasure extends Measure {
         super.load();
         if (!StringUtils.isEmpty(ruleDescription)) {
             this.ruleDescriptionMap = JsonUtil.toEntity(ruleDescription,
-                new TypeReference<Map<String, Object>>() {
-                });
+                    new TypeReference<Map<String, Object>>() {
+                    });
         }
+    }
+
+    @Override
+    public String getType() {
+        return "griffin";
+    }
+
+    public enum ProcessType {
+        /**
+         * Currently we just support BATCH and STREAMING type
+         */
+        BATCH,
+        STREAMING
     }
 }

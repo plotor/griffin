@@ -19,8 +19,6 @@ under the License.
 
 package org.apache.griffin.core.exception;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,34 +26,36 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import javax.servlet.http.HttpServletRequest;
+
 @ControllerAdvice
 public class GriffinExceptionHandler {
 
     @SuppressWarnings("rawtypes")
     @ExceptionHandler(GriffinException.ServiceException.class)
     public ResponseEntity handleGriffinExceptionOfServer(
-        HttpServletRequest request,
-        GriffinException.ServiceException e) {
+            HttpServletRequest request,
+            GriffinException.ServiceException e) {
         String message = e.getMessage();
         Throwable cause = e.getCause();
         GriffinExceptionResponse body = new GriffinExceptionResponse(
-            HttpStatus.INTERNAL_SERVER_ERROR,
-            message, request.getRequestURI(), cause.getClass().getName());
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                message, request.getRequestURI(), cause.getClass().getName());
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @SuppressWarnings("rawtypes")
     @ExceptionHandler(GriffinException.class)
     public ResponseEntity handleGriffinExceptionOfClient(
-        HttpServletRequest request, GriffinException e) {
+            HttpServletRequest request, GriffinException e) {
         ResponseStatus responseStatus = AnnotationUtils.findAnnotation(
-            e.getClass(), ResponseStatus.class);
+                e.getClass(), ResponseStatus.class);
         HttpStatus status = responseStatus.code();
         String code = e.getMessage();
         GriffinExceptionMessage message = GriffinExceptionMessage
-            .valueOf(Integer.valueOf(code));
+                .valueOf(Integer.valueOf(code));
         GriffinExceptionResponse body = new GriffinExceptionResponse(
-            status, message, request.getRequestURI());
+                status, message, request.getRequestURI());
         return new ResponseEntity<>(body, status);
     }
 }

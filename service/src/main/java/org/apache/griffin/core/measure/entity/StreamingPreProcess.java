@@ -24,6 +24,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.apache.griffin.core.util.JsonUtil;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.util.Map;
@@ -33,9 +35,6 @@ import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Transient;
-
-import org.apache.griffin.core.util.JsonUtil;
-import org.springframework.util.StringUtils;
 
 @Entity
 public class StreamingPreProcess extends AbstractAuditableEntity {
@@ -84,7 +83,6 @@ public class StreamingPreProcess extends AbstractAuditableEntity {
         this.outDataFrameName = outDataFrameName;
     }
 
-
     public String getRule() {
         return rule;
     }
@@ -122,8 +120,8 @@ public class StreamingPreProcess extends AbstractAuditableEntity {
     public void load() throws IOException {
         if (!StringUtils.isEmpty(details)) {
             this.detailsMap = JsonUtil.toEntity(details,
-                new TypeReference<Map<String, Object>>() {
-                });
+                    new TypeReference<Map<String, Object>>() {
+                    });
         }
     }
 

@@ -16,11 +16,8 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 */
-package org.apache.griffin.core.config;
 
-import java.util.HashMap;
-import java.util.Map;
-import javax.sql.DataSource;
+package org.apache.griffin.core.config;
 
 import org.eclipse.persistence.config.PersistenceUnitProperties;
 import org.springframework.beans.factory.ObjectProvider;
@@ -33,13 +30,17 @@ import org.springframework.orm.jpa.vendor.AbstractJpaVendorAdapter;
 import org.springframework.orm.jpa.vendor.EclipseLinkJpaVendorAdapter;
 import org.springframework.transaction.jta.JtaTransactionManager;
 
+import java.util.HashMap;
+import java.util.Map;
+import javax.sql.DataSource;
+
 @Configuration
 @ComponentScan("org.apache.griffin.core")
 public class EclipseLinkJpaConfig extends JpaBaseConfiguration {
     protected EclipseLinkJpaConfig(
-        DataSource ds, JpaProperties properties,
-        ObjectProvider<JtaTransactionManager> jtm,
-        ObjectProvider<TransactionManagerCustomizers> tmc) {
+            DataSource ds, JpaProperties properties,
+            ObjectProvider<JtaTransactionManager> jtm,
+            ObjectProvider<TransactionManagerCustomizers> tmc) {
         super(ds, properties, jtm, tmc);
     }
 
@@ -53,7 +54,7 @@ public class EclipseLinkJpaConfig extends JpaBaseConfiguration {
         Map<String, Object> map = new HashMap<>();
         map.put(PersistenceUnitProperties.WEAVING, "false");
         map.put(PersistenceUnitProperties.DDL_GENERATION,
-            "create-or-extend-tables");
+                "create-or-extend-tables");
         return map;
     }
 }
