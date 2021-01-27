@@ -22,19 +22,15 @@ package org.apache.griffin.core.job.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.griffin.core.job.entity.LivySessionStates.State;
 import org.apache.griffin.core.measure.entity.AbstractAuditableEntity;
 import org.apache.griffin.core.measure.entity.GriffinMeasure.ProcessType;
-import static org.apache.griffin.core.measure.entity.GriffinMeasure.ProcessType.BATCH;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
+
+import static org.apache.griffin.core.measure.entity.GriffinMeasure.ProcessType.BATCH;
 
 @Entity
 @Table(indexes = {@Index(columnList = "triggerKey")})
@@ -133,6 +129,11 @@ public class JobInstanceBean extends AbstractAuditableEntity {
         this.appUri = appUri;
         this.tms = timestamp;
         this.expireTms = expireTms;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.NO_CLASS_NAME_STYLE);
     }
 
     public AbstractJob getJob() {

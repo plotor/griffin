@@ -24,19 +24,15 @@ import org.apache.griffin.core.job.entity.JobHealth;
 import org.apache.griffin.core.job.entity.JobInstanceBean;
 import org.apache.griffin.core.util.FSUtil;
 import org.quartz.SchedulerException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -46,18 +42,20 @@ import java.util.Map;
 @RequestMapping("/api/v1")
 public class JobController {
 
+    private static final Logger log = LoggerFactory.getLogger(JobController.class);
+
     @Autowired
     private JobService jobService;
 
     @RequestMapping(value = "/jobs", method = RequestMethod.GET)
-    public List<AbstractJob> getJobs(@RequestParam(value = "type",
-            defaultValue = "") String type) {
+    public List<AbstractJob> getJobs(@RequestParam(value = "type", defaultValue = "") String type) {
         return jobService.getAliveJobs(type);
     }
 
     @RequestMapping(value = "/jobs", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.CREATED)
     public AbstractJob addJob(@RequestBody AbstractJob job) throws Exception {
+        log.info("Try create new job, info: {}", job);
         return jobService.addJob(job);
     }
 

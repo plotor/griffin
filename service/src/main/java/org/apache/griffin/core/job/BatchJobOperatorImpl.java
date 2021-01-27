@@ -20,37 +20,12 @@ under the License.
 package org.apache.griffin.core.job;
 
 import org.apache.griffin.core.exception.GriffinException;
-import static org.apache.griffin.core.exception.GriffinExceptionMessage.INVALID_CONNECTOR_NAME;
-import static org.apache.griffin.core.exception.GriffinExceptionMessage.INVALID_CRON_EXPRESSION;
-import static org.apache.griffin.core.exception.GriffinExceptionMessage.INVALID_JOB_NAME;
-import static org.apache.griffin.core.exception.GriffinExceptionMessage.JOB_IS_NOT_IN_PAUSED_STATUS;
-import static org.apache.griffin.core.exception.GriffinExceptionMessage.JOB_IS_NOT_SCHEDULED;
-import static org.apache.griffin.core.exception.GriffinExceptionMessage.JOB_KEY_DOES_NOT_EXIST;
-import static org.apache.griffin.core.exception.GriffinExceptionMessage.MISSING_BASELINE_CONFIG;
-import org.apache.griffin.core.job.entity.AbstractJob;
-import org.apache.griffin.core.job.entity.BatchJob;
-import org.apache.griffin.core.job.entity.JobDataSegment;
-import org.apache.griffin.core.job.entity.JobHealth;
-import org.apache.griffin.core.job.entity.JobInstanceBean;
-import org.apache.griffin.core.job.entity.JobState;
-import org.apache.griffin.core.job.entity.LivySessionStates;
+import org.apache.griffin.core.job.entity.*;
 import org.apache.griffin.core.job.repo.BatchJobRepo;
 import org.apache.griffin.core.job.repo.JobInstanceRepo;
 import org.apache.griffin.core.measure.entity.DataSource;
 import org.apache.griffin.core.measure.entity.GriffinMeasure;
-import static org.apache.griffin.core.measure.entity.GriffinMeasure.ProcessType.BATCH;
-import static org.quartz.CronExpression.isValidExpression;
-import org.quartz.JobKey;
-import static org.quartz.JobKey.jobKey;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.Trigger;
-import static org.quartz.Trigger.TriggerState;
-import static org.quartz.Trigger.TriggerState.BLOCKED;
-import static org.quartz.Trigger.TriggerState.NORMAL;
-import static org.quartz.Trigger.TriggerState.PAUSED;
-import org.quartz.TriggerKey;
-import static org.quartz.TriggerKey.triggerKey;
+import org.quartz.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,12 +36,15 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+
+import static org.apache.griffin.core.exception.GriffinExceptionMessage.*;
+import static org.apache.griffin.core.measure.entity.GriffinMeasure.ProcessType.BATCH;
+import static org.quartz.CronExpression.isValidExpression;
+import static org.quartz.JobKey.jobKey;
+import static org.quartz.Trigger.TriggerState;
+import static org.quartz.Trigger.TriggerState.*;
+import static org.quartz.TriggerKey.triggerKey;
 
 @Service
 public class BatchJobOperatorImpl implements JobOperator {
@@ -85,8 +63,7 @@ public class BatchJobOperatorImpl implements JobOperator {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public AbstractJob add(AbstractJob job, GriffinMeasure measure)
-            throws Exception {
+    public AbstractJob add(AbstractJob job, GriffinMeasure measure) throws Exception {
         validateParams(job, measure);
         String qName = jobService.getQuartzName(job);
         String qGroup = jobService.getQuartzGroup();
@@ -239,9 +216,9 @@ public class BatchJobOperatorImpl implements JobOperator {
     }
 
     /**
-     * @param job griffin job
+     * @param job    griffin job
      * @param delete if job needs to be deleted,set isNeedDelete true,otherwise
-     * it just will be paused.
+     *               it just will be paused.
      */
     private void pauseJob(BatchJob job, boolean delete) {
         try {
@@ -334,17 +311,14 @@ public class BatchJobOperatorImpl implements JobOperator {
             throw new GriffinException.BadRequestException(INVALID_JOB_NAME);
         }
         if (!isValidCronExpression(job.getCronExpression())) {
-            throw new GriffinException.BadRequestException
-                    (INVALID_CRON_EXPRESSION);
+            throw new GriffinException.BadRequestException(INVALID_CRON_EXPRESSION);
         }
         if (!isValidBaseLine(job.getSegments())) {
-            throw new GriffinException.BadRequestException
-                    (MISSING_BASELINE_CONFIG);
+            throw new GriffinException.BadRequestException(MISSING_BASELINE_CONFIG);
         }
         List<String> names = getConnectorNames(measure);
         if (!isValidConnectorNames(job.getSegments(), names)) {
-            throw new GriffinException.BadRequestException
-                    (INVALID_CONNECTOR_NAME);
+            throw new GriffinException.BadRequestException(INVALID_CONNECTOR_NAME);
         }
     }
 
@@ -367,8 +341,7 @@ public class BatchJobOperatorImpl implements JobOperator {
                 return true;
             }
         }
-        LOGGER.warn("Please set segment timestamp baseline " +
-                "in as.baseline field.");
+        LOGGER.warn("Please set segment timestamp baseline in as.baseline field.");
         return false;
     }
 

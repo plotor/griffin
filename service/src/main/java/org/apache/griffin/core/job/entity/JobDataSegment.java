@@ -25,11 +25,7 @@ import org.apache.griffin.core.measure.entity.AbstractAuditableEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 @Entity
@@ -37,8 +33,7 @@ public class JobDataSegment extends AbstractAuditableEntity {
 
     private static final long serialVersionUID = -9056531122243340484L;
 
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(JobDataSegment.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobDataSegment.class);
 
     @NotNull
     private String dataConnectorName;

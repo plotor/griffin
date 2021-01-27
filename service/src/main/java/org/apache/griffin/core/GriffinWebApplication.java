@@ -30,8 +30,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableScheduling
 public class GriffinWebApplication {
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(GriffinWebApplication.class);
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GriffinWebApplication.class);
 
     public static void main(String[] args) {
         SpringApplication.run(GriffinWebApplication.class, args);

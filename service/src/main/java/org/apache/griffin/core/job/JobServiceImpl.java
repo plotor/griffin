@@ -20,67 +20,24 @@ under the License.
 package org.apache.griffin.core.job;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import static java.util.TimeZone.getTimeZone;
 import org.apache.commons.lang.StringUtils;
-import static org.apache.griffin.core.config.EnvConfig.ENV_BATCH;
-import static org.apache.griffin.core.config.EnvConfig.ENV_STREAMING;
 import org.apache.griffin.core.event.GriffinEventManager;
 import org.apache.griffin.core.event.JobEvent;
 import org.apache.griffin.core.exception.GriffinException;
-import static org.apache.griffin.core.exception.GriffinExceptionMessage.INSTANCE_ID_DOES_NOT_EXIST;
-import static org.apache.griffin.core.exception.GriffinExceptionMessage.INVALID_MEASURE_ID;
-import static org.apache.griffin.core.exception.GriffinExceptionMessage.JOB_ID_DOES_NOT_EXIST;
-import static org.apache.griffin.core.exception.GriffinExceptionMessage.JOB_NAME_DOES_NOT_EXIST;
-import static org.apache.griffin.core.exception.GriffinExceptionMessage.JOB_TYPE_DOES_NOT_SUPPORT;
-import static org.apache.griffin.core.exception.GriffinExceptionMessage.MEASURE_TYPE_DOES_NOT_SUPPORT;
-import static org.apache.griffin.core.exception.GriffinExceptionMessage.NO_SUCH_JOB_ACTION;
-import static org.apache.griffin.core.exception.GriffinExceptionMessage.QUARTZ_JOB_ALREADY_EXIST;
-import org.apache.griffin.core.job.entity.AbstractJob;
-import org.apache.griffin.core.job.entity.BatchJob;
-import org.apache.griffin.core.job.entity.JobHealth;
-import org.apache.griffin.core.job.entity.JobInstanceBean;
-import org.apache.griffin.core.job.entity.JobState;
-import org.apache.griffin.core.job.entity.JobType;
-import org.apache.griffin.core.job.entity.LivySessionStates;
+import org.apache.griffin.core.job.entity.*;
 import org.apache.griffin.core.job.entity.LivySessionStates.State;
-import static org.apache.griffin.core.job.entity.LivySessionStates.State.BUSY;
-import static org.apache.griffin.core.job.entity.LivySessionStates.State.DEAD;
-import static org.apache.griffin.core.job.entity.LivySessionStates.State.IDLE;
-import static org.apache.griffin.core.job.entity.LivySessionStates.State.NOT_STARTED;
-import static org.apache.griffin.core.job.entity.LivySessionStates.State.RECOVERING;
-import static org.apache.griffin.core.job.entity.LivySessionStates.State.RUNNING;
-import static org.apache.griffin.core.job.entity.LivySessionStates.State.STARTING;
-import static org.apache.griffin.core.job.entity.LivySessionStates.State.SUCCESS;
-import static org.apache.griffin.core.job.entity.LivySessionStates.State.UNKNOWN;
-import static org.apache.griffin.core.job.entity.LivySessionStates.isActive;
-import org.apache.griffin.core.job.entity.StreamingJob;
 import org.apache.griffin.core.job.repo.BatchJobRepo;
 import org.apache.griffin.core.job.repo.JobInstanceRepo;
 import org.apache.griffin.core.job.repo.JobRepo;
 import org.apache.griffin.core.job.repo.StreamingJobRepo;
 import org.apache.griffin.core.measure.entity.GriffinMeasure;
 import org.apache.griffin.core.measure.entity.GriffinMeasure.ProcessType;
-import static org.apache.griffin.core.measure.entity.GriffinMeasure.ProcessType.BATCH;
-import static org.apache.griffin.core.measure.entity.GriffinMeasure.ProcessType.STREAMING;
 import org.apache.griffin.core.measure.repo.GriffinMeasureRepo;
 import org.apache.griffin.core.util.JsonUtil;
 import org.apache.griffin.core.util.YarnNetUtil;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import static org.quartz.CronScheduleBuilder.cronSchedule;
-import static org.quartz.JobBuilder.newJob;
-import org.quartz.JobDataMap;
-import org.quartz.JobDetail;
-import org.quartz.JobKey;
-import static org.quartz.JobKey.jobKey;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
-import org.quartz.Trigger;
-import org.quartz.TriggerBuilder;
-import static org.quartz.TriggerBuilder.newTrigger;
-import org.quartz.TriggerKey;
-import static org.quartz.TriggerKey.triggerKey;
+import org.quartz.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,13 +58,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.TimeZone;
 
+import static java.util.TimeZone.getTimeZone;
+import static org.apache.griffin.core.config.EnvConfig.ENV_BATCH;
+import static org.apache.griffin.core.config.EnvConfig.ENV_STREAMING;
+import static org.apache.griffin.core.exception.GriffinExceptionMessage.*;
+import static org.apache.griffin.core.job.entity.LivySessionStates.State.*;
+import static org.apache.griffin.core.job.entity.LivySessionStates.isActive;
+import static org.apache.griffin.core.measure.entity.GriffinMeasure.ProcessType.BATCH;
+import static org.apache.griffin.core.measure.entity.GriffinMeasure.ProcessType.STREAMING;
+import static org.quartz.CronScheduleBuilder.cronSchedule;
+import static org.quartz.JobBuilder.newJob;
+import static org.quartz.JobKey.jobKey;
+import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
+import static org.quartz.TriggerBuilder.newTrigger;
+import static org.quartz.TriggerKey.triggerKey;
+
 @Service
 public class JobServiceImpl implements JobService {
     public static final String GRIFFIN_JOB_ID = "griffinJobId";
     static final String START = "start";
     static final String STOP = "stop";
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(JobServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobServiceImpl.class);
     private static final int MAX_PAGE_SIZE = 1024;
     private static final int DEFAULT_PAGE_SIZE = 10;
     @Autowired
@@ -153,11 +124,14 @@ public class JobServiceImpl implements JobService {
 
     @Override
     public AbstractJob addJob(AbstractJob job) throws Exception {
+        // 新建 create job 事件
         JobEvent jobEvent = JobEvent.yieldJobEventBeforeCreation(job);
         eventManager.notifyListeners(jobEvent);
         Long measureId = job.getMeasureId();
         GriffinMeasure measure = getMeasureIfValid(measureId);
+        // 依据 job 类型获取对应的 Operator
         JobOperator op = getJobOperator(measure.getProcessType());
+        // 添加一个定时任务
         AbstractJob jobSaved = op.add(job, measure);
         jobEvent = JobEvent.yieldJobEventAfterCreation(jobSaved);
         eventManager.notifyListeners(jobEvent);
@@ -169,14 +143,13 @@ public class JobServiceImpl implements JobService {
         AbstractJob job = jobRepo.findByIdAndDeleted(jobId, false);
         if (job == null) {
             LOGGER.warn("Job id {} does not exist.", jobId);
-            throw new GriffinException
-                    .NotFoundException(JOB_ID_DOES_NOT_EXIST);
+            throw new GriffinException.NotFoundException(JOB_ID_DOES_NOT_EXIST);
         }
         return job;
     }
 
     /**
-     * @param jobId job id
+     * @param jobId  job id
      * @param action job operation: start job, stop job
      */
     @Override
@@ -408,18 +381,16 @@ public class JobServiceImpl implements JobService {
                 (MEASURE_TYPE_DOES_NOT_SUPPORT);
     }
 
-    TriggerKey getTriggerKeyIfValid(String qName, String qGroup) throws
-                                                                 SchedulerException {
+    TriggerKey getTriggerKeyIfValid(String qName, String qGroup) throws SchedulerException {
         TriggerKey triggerKey = triggerKey(qName, qGroup);
         if (factory.getScheduler().checkExists(triggerKey)) {
-            throw new GriffinException.ConflictException
-                    (QUARTZ_JOB_ALREADY_EXIST);
+            throw new GriffinException.ConflictException(QUARTZ_JOB_ALREADY_EXIST);
         }
         return triggerKey;
     }
 
     List<? extends Trigger> getTriggers(String name, String group) throws
-                                                                   SchedulerException {
+            SchedulerException {
         if (name == null || group == null) {
             return null;
         }
@@ -429,7 +400,7 @@ public class JobServiceImpl implements JobService {
     }
 
     private JobState genJobState(AbstractJob job, String action) throws
-                                                                 SchedulerException {
+            SchedulerException {
         JobOperator op = getJobOperator(job);
         JobState state = op.getState(job, action);
         job.setJobState(state);
@@ -440,8 +411,7 @@ public class JobServiceImpl implements JobService {
         return genJobState(job, null);
     }
 
-    void addJob(TriggerKey tk, AbstractJob job, ProcessType type) throws
-                                                                  Exception {
+    void addJob(TriggerKey tk, AbstractJob job, ProcessType type) throws Exception {
         JobDetail jobDetail = addJobDetail(tk, job);
         Trigger trigger = genTriggerInstance(tk, jobDetail, job, type);
         factory.getScheduler().scheduleJob(trigger);
@@ -462,21 +432,20 @@ public class JobServiceImpl implements JobService {
         }
         int size = jobRepo.countByJobNameAndDeleted(jobName, false);
         if (size > 0) {
-            LOGGER.warn("Job name already exits.");
+            LOGGER.warn("Job name {} already exits.", jobName);
             return false;
         }
         return true;
     }
 
     private GriffinMeasure getMeasureIfValid(Long measureId) {
-        GriffinMeasure measure = measureRepo.findByIdAndDeleted(measureId,
-                false);
+        GriffinMeasure measure = measureRepo.findByIdAndDeleted(measureId, false);
         if (measure == null) {
             LOGGER.warn("The measure id {} isn't valid. Maybe it doesn't " +
-                            "exist or is external measure type.",
-                    measureId);
+                    "exist or is external measure type.", measureId);
             throw new GriffinException.BadRequestException(INVALID_MEASURE_ID);
         }
+        LOGGER.debug("Get griffin measure by id[{}] success, info: {}", measureId, measure);
         return measure;
     }
 
@@ -496,17 +465,24 @@ public class JobServiceImpl implements JobService {
 
     }
 
-    private JobDetail addJobDetail(TriggerKey triggerKey, AbstractJob job)
-            throws SchedulerException {
+    /**
+     * Add JobDetail to quartz
+     *
+     * @param triggerKey
+     * @param job
+     * @return
+     * @throws SchedulerException
+     */
+    private JobDetail addJobDetail(TriggerKey triggerKey, AbstractJob job) throws SchedulerException {
         Scheduler scheduler = factory.getScheduler();
         JobKey jobKey = jobKey(triggerKey.getName(), triggerKey.getGroup());
         JobDetail jobDetail;
-        Boolean isJobKeyExist = scheduler.checkExists(jobKey);
+        boolean isJobKeyExist = scheduler.checkExists(jobKey);
         if (isJobKeyExist) {
             jobDetail = scheduler.getJobDetail(jobKey);
         } else {
-            jobDetail = newJob(JobInstance.class).storeDurably().withIdentity
-                    (jobKey).build();
+            // 新建一个 JobInstance 实例
+            jobDetail = newJob(JobInstance.class).storeDurably().withIdentity(jobKey).build();
         }
         setJobDataMap(jobDetail, job);
         scheduler.addJob(jobDetail, isJobKeyExist);
@@ -526,7 +502,7 @@ public class JobServiceImpl implements JobService {
      * @param measureId measure id
      */
     public void deleteJobsRelateToMeasure(Long measureId) throws
-                                                          SchedulerException {
+            SchedulerException {
         List<AbstractJob> jobs = jobRepo.findByMeasureIdAndDeleted(measureId,
                 false);
         if (CollectionUtils.isEmpty(jobs)) {
@@ -606,7 +582,7 @@ public class JobServiceImpl implements JobService {
      * .
      *
      * @param instance job instance bean
-     * @param e HttpClientErrorException
+     * @param e        HttpClientErrorException
      * @return boolean
      */
     private boolean checkStatus(JobInstanceBean instance,

@@ -19,16 +19,18 @@ under the License.
 
 package org.apache.griffin.core.common;
 
-import java.io.IOException;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 public class SimpleCORSFilter implements Filter {
+
+    private static final Logger log = LoggerFactory.getLogger(SimpleCORSFilter.class);
+
     @Override
     public void init(final FilterConfig filterConfig) {
     }
@@ -38,6 +40,10 @@ public class SimpleCORSFilter implements Filter {
                          final ServletResponse res,
                          final FilterChain chain)
             throws IOException, ServletException {
+
+        HttpServletRequest hsr = (HttpServletRequest) req;
+        log.info("ACCESS URL: {}?{}", hsr.getRequestURI(), hsr.getQueryString());
+
         HttpServletResponse response = (HttpServletResponse) res;
         response.setHeader("Access-Control-Allow-Origin", "*");
         response.setHeader("Access-Control-Allow-Methods",

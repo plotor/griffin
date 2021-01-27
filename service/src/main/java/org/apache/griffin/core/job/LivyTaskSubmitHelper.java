@@ -22,10 +22,6 @@ package org.apache.griffin.core.job;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.commons.collections.map.HashedMap;
-import static org.apache.griffin.core.config.PropertiesConfig.livyConfMap;
-import static org.apache.griffin.core.job.entity.LivySessionStates.State.NOT_FOUND;
-import static org.apache.griffin.core.util.JsonUtil.toEntity;
-import static org.apache.griffin.core.util.JsonUtil.toJsonWithFormat;
 import org.quartz.JobDetail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,17 +36,17 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.annotation.PostConstruct;
+
+import static org.apache.griffin.core.config.PropertiesConfig.livyConfMap;
+import static org.apache.griffin.core.job.entity.LivySessionStates.State.NOT_FOUND;
+import static org.apache.griffin.core.util.JsonUtil.toEntity;
+import static org.apache.griffin.core.util.JsonUtil.toJsonWithFormat;
 
 @Component
 public class LivyTaskSubmitHelper {
@@ -152,9 +148,8 @@ public class LivyTaskSubmitHelper {
             throws IOException {
 
         int retryCount = appIdRetryCount;
-        TypeReference<HashMap<String, Object>> type =
-                new TypeReference<HashMap<String, Object>>() {
-                };
+        TypeReference<HashMap<String, Object>> type = new TypeReference<HashMap<String, Object>>() {
+        };
         Map<String, Object> resultMap = toEntity(result, type);
 
         if (retryCount <= 0) {
@@ -197,9 +192,9 @@ public class LivyTaskSubmitHelper {
     }
 
     public String postToLivy(String uri) {
-        LOGGER.info("Post To Livy URI is: " + uri);
+        LOGGER.info("Post To livy, uri is: {}", uri);
         String needKerberos = env.getProperty("livy.need.kerberos");
-        LOGGER.info("Need Kerberos:" + needKerberos);
+        LOGGER.info("Need Kerberos: " + needKerberos);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -210,7 +205,7 @@ public class LivyTaskSubmitHelper {
             return null;
         }
 
-        if (needKerberos.equalsIgnoreCase("false")) {
+        if ("false".equalsIgnoreCase(needKerberos)) {
             LOGGER.info("The livy server doesn't need Kerberos Authentication");
             String result = null;
             try {
@@ -224,7 +219,7 @@ public class LivyTaskSubmitHelper {
             } catch (JsonProcessingException e) {
                 LOGGER.error("Json Parsing failed, {}", e.getMessage(), e);
             } catch (Exception e) {
-                LOGGER.error("Post to livy ERROR. \n {}", e);
+                LOGGER.error("Post to livy ERROR.", e);
             }
             return result;
         } else {
@@ -312,6 +307,7 @@ public class LivyTaskSubmitHelper {
             this.es = es;
         }
 
+        @Override
         public void run() {
             long insertTime = System.currentTimeMillis();
             while (true) {

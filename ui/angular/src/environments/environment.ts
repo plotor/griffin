@@ -23,5 +23,5 @@ under the License.
 
 export const environment = {
   production: false,
-  BACKEND_SERVER: '',
+  BACKEND_SERVER: 'http://localhost:8080',
 };

@@ -19,57 +19,39 @@ under the License.
 
 package org.apache.griffin.core.job.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.griffin.core.measure.entity.AbstractAuditableEntity;
 import org.apache.griffin.core.util.JsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorColumn;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
-import javax.persistence.PostLoad;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "job")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY,
-        property = "job.type")
-@JsonSubTypes({@JsonSubTypes.Type(value = BatchJob.class, name = "batch"),
-        @JsonSubTypes.Type(
-                value = StreamingJob.class,
-                name = "streaming"),
-        @JsonSubTypes.Type(
-                value = VirtualJob.class,
-                name = "virtual")})
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "job.type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = BatchJob.class, name = "batch"),
+        @JsonSubTypes.Type(value = StreamingJob.class, name = "streaming"),
+        @JsonSubTypes.Type(value = VirtualJob.class, name = "virtual")
+})
 @DiscriminatorColumn(name = "type")
 public abstract class AbstractJob extends AbstractAuditableEntity {
+
     private static final long serialVersionUID = 7569493377868453677L;
 
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(AbstractJob.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJob.class);
 
     protected Long measureId;
 
@@ -101,13 +83,9 @@ public abstract class AbstractJob extends AbstractAuditableEntity {
     private Map<String, Object> configMap;
 
     @NotNull
-    @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST,
-            CascadeType.REMOVE, CascadeType.MERGE})
+    @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.REMOVE, CascadeType.MERGE})
     @JoinColumn(name = "job_id")
     private List<JobDataSegment> segments = new ArrayList<>();
-
-    AbstractJob() {
-    }
 
     AbstractJob(Long measureId, String jobName, String name, String group,
                 boolean deleted) {
@@ -134,6 +112,15 @@ public abstract class AbstractJob extends AbstractAuditableEntity {
         this.jobName = jobName;
         this.measureId = measureId;
         this.metricName = metricName;
+    }
+
+    AbstractJob() {
+
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.NO_CLASS_NAME_STYLE);
     }
 
     @JsonProperty("measure.id")

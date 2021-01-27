@@ -18,6 +18,7 @@
 package org.apache.griffin.measure.step.builder
 
 import org.apache.commons.lang.StringUtils
+
 import org.apache.griffin.measure.Loggable
 import org.apache.griffin.measure.configuration.dqdefinition.{DataSourceParam, Param, RuleParam}
 import org.apache.griffin.measure.configuration.enums.DslType._

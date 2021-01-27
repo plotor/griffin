@@ -21,42 +21,16 @@ package org.apache.griffin.core.job;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.griffin.core.exception.GriffinException;
-import static org.apache.griffin.core.exception.GriffinExceptionMessage.QUARTZ_JOB_ALREADY_EXIST;
-import static org.apache.griffin.core.job.JobServiceImpl.GRIFFIN_JOB_ID;
-import org.apache.griffin.core.job.entity.AbstractJob;
-import org.apache.griffin.core.job.entity.JobDataSegment;
-import org.apache.griffin.core.job.entity.JobInstanceBean;
-import static org.apache.griffin.core.job.entity.LivySessionStates.State.FINDING;
-import org.apache.griffin.core.job.entity.SegmentPredicate;
-import org.apache.griffin.core.job.entity.SegmentRange;
+import org.apache.griffin.core.job.entity.*;
 import org.apache.griffin.core.job.repo.JobInstanceRepo;
 import org.apache.griffin.core.job.repo.JobRepo;
 import org.apache.griffin.core.measure.entity.DataConnector;
 import org.apache.griffin.core.measure.entity.DataSource;
 import org.apache.griffin.core.measure.entity.GriffinMeasure;
 import org.apache.griffin.core.measure.entity.GriffinMeasure.ProcessType;
-import static org.apache.griffin.core.measure.entity.GriffinMeasure.ProcessType.BATCH;
-import static org.apache.griffin.core.measure.entity.GriffinMeasure.ProcessType.STREAMING;
 import org.apache.griffin.core.measure.repo.GriffinMeasureRepo;
-import static org.apache.griffin.core.util.JsonUtil.toEntity;
-import static org.apache.griffin.core.util.JsonUtil.toJson;
 import org.apache.griffin.core.util.TimeUtil;
-import org.quartz.DisallowConcurrentExecution;
-import org.quartz.Job;
-import static org.quartz.JobBuilder.newJob;
-import org.quartz.JobDataMap;
-import org.quartz.JobDetail;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobKey;
-import static org.quartz.JobKey.jobKey;
-import org.quartz.PersistJobDataAfterExecution;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
-import org.quartz.Trigger;
-import static org.quartz.TriggerBuilder.newTrigger;
-import org.quartz.TriggerKey;
-import static org.quartz.TriggerKey.triggerKey;
+import org.quartz.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,13 +40,20 @@ import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
+import static org.apache.griffin.core.exception.GriffinExceptionMessage.QUARTZ_JOB_ALREADY_EXIST;
+import static org.apache.griffin.core.job.JobServiceImpl.GRIFFIN_JOB_ID;
+import static org.apache.griffin.core.job.entity.LivySessionStates.State.FINDING;
+import static org.apache.griffin.core.measure.entity.GriffinMeasure.ProcessType.BATCH;
+import static org.apache.griffin.core.measure.entity.GriffinMeasure.ProcessType.STREAMING;
+import static org.apache.griffin.core.util.JsonUtil.toEntity;
+import static org.apache.griffin.core.util.JsonUtil.toJson;
+import static org.quartz.JobBuilder.newJob;
+import static org.quartz.JobKey.jobKey;
+import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
+import static org.quartz.TriggerBuilder.newTrigger;
+import static org.quartz.TriggerKey.triggerKey;
 
 @PersistJobDataAfterExecution
 @DisallowConcurrentExecution
@@ -82,12 +63,10 @@ public class JobInstance implements Job {
     public static final String PREDICATE_JOB_NAME = "predicateJobName";
     public static final String INTERVAL = "interval";
     public static final String REPEAT = "repeat";
-    public static final String CHECK_DONEFILE_SCHEDULE =
-            "checkdonefile.schedule";
+    public static final String CHECK_DONEFILE_SCHEDULE = "checkdonefile.schedule";
     static final String JOB_NAME = "jobName";
     static final String PATH_CONNECTOR_CHARACTER = ",";
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(JobInstance.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobInstance.class);
     private static final String TRIGGER_KEY = "trigger";
     @Autowired
     @Qualifier("schedulerFactoryBean")
@@ -111,6 +90,8 @@ public class JobInstance implements Job {
     public void execute(JobExecutionContext context) {
         try {
             initParam(context);
+            LOGGER.info("Try execute job instance: {}, name: {}, measure: {}",
+                    job.getId(), job.getJobName(), measure.getName());
             setSourcesPartitionsAndPredicates(measure.getDataSources());
             createJobInstance(job.getConfigMap());
         } catch (Exception e) {
@@ -118,8 +99,7 @@ public class JobInstance implements Job {
         }
     }
 
-    private void initParam(JobExecutionContext context)
-            throws SchedulerException {
+    private void initParam(JobExecutionContext context) throws SchedulerException {
         mPredicates = new ArrayList<>();
         JobDetail jobDetail = context.getJobDetail();
         Long jobId = jobDetail.getJobDataMap().getLong(GRIFFIN_JOB_ID);
@@ -134,8 +114,7 @@ public class JobInstance implements Job {
     }
 
     @SuppressWarnings("unchecked")
-    private void setJobStartTime(JobDetail jobDetail)
-            throws SchedulerException {
+    private void setJobStartTime(JobDetail jobDetail) throws SchedulerException {
         Scheduler scheduler = factory.getScheduler();
         JobKey jobKey = jobDetail.getKey();
         List<Trigger> triggers =
@@ -148,8 +127,7 @@ public class JobInstance implements Job {
         boolean isFirstBaseline = true;
         for (JobDataSegment jds : job.getSegments()) {
             if (jds.isAsTsBaseline() && isFirstBaseline) {
-                Long tsOffset = TimeUtil.str2Long(
-                        jds.getSegmentRange().getBegin());
+                Long tsOffset = TimeUtil.str2Long(jds.getSegmentRange().getBegin());
                 measure.setTimestamp(jobStartTime + tsOffset);
                 isFirstBaseline = false;
             }
@@ -174,7 +152,7 @@ public class JobInstance implements Job {
      * split data into several part and get every part start timestamp
      *
      * @param segRange config of data
-     * @param dc data connector
+     * @param dc       data connector
      * @return split timestamps of data
      */
     private Long[] genSampleTs(SegmentRange segRange, DataConnector dc) {
@@ -190,7 +168,7 @@ public class JobInstance implements Job {
             range = Math.abs(range);
         }
         if (Math.abs(dataUnit) >= range || dataUnit == 0) {
-            return new Long[] {dataStartTime};
+            return new Long[]{dataStartTime};
         }
         int count = (int) (range / dataUnit);
         Long[] timestamps = new Long[count];
@@ -203,7 +181,7 @@ public class JobInstance implements Job {
     /**
      * set data connector predicates
      *
-     * @param dc data connector
+     * @param dc       data connector
      * @param sampleTs collection of data split start timestamp
      */
     private void setConnectorPredicates(DataConnector dc, Long[] sampleTs) {
@@ -224,7 +202,7 @@ public class JobInstance implements Job {
     }
 
     /**
-     * @param conf config map
+     * @param conf     config map
      * @param sampleTs collection of data split start timestamp
      * @return all config data combine,like {"where": "year=2017 AND month=11
      * AND dt=15 AND hour=09,year=2017 AND month=11 AND
@@ -257,16 +235,13 @@ public class JobInstance implements Job {
     }
 
     @SuppressWarnings("unchecked")
-    private void createJobInstance(Map<String, Object> confMap)
-            throws Exception {
+    private void createJobInstance(Map<String, Object> confMap) throws Exception {
         confMap = checkConfMap(confMap != null ? confMap : new HashMap<>());
-        Map<String, Object> config = (Map<String, Object>) confMap
-                .get(CHECK_DONEFILE_SCHEDULE);
+        Map<String, Object> config = (Map<String, Object>) confMap.get(CHECK_DONEFILE_SCHEDULE);
         Long interval = TimeUtil.str2Long((String) config.get(INTERVAL));
         Integer repeat = Integer.valueOf(config.get(REPEAT).toString());
         String groupName = "PG";
-        String jobName = job.getJobName() + "_predicate_"
-                + System.currentTimeMillis();
+        String jobName = job.getJobName() + "_predicate_" + System.currentTimeMillis();
         TriggerKey tk = triggerKey(jobName, groupName);
         if (factory.getScheduler().checkExists(tk)) {
             throw new GriffinException.ConflictException(QUARTZ_JOB_ALREADY_EXIST);
@@ -278,8 +253,7 @@ public class JobInstance implements Job {
 
     @SuppressWarnings("unchecked")
     Map<String, Object> checkConfMap(Map<String, Object> confMap) {
-        Map<String, Object> config = (Map<String, Object>) confMap.get
-                (CHECK_DONEFILE_SCHEDULE);
+        Map<String, Object> config = (Map<String, Object>) confMap.get(CHECK_DONEFILE_SCHEDULE);
         String interval = env.getProperty("predicate.job.interval");
         interval = interval != null ? interval : "5m";
         String repeat = env.getProperty("predicate.job.repeat.count");
@@ -301,24 +275,20 @@ public class JobInstance implements Job {
     }
 
     private void saveJobInstance(String pName, String pGroup, String triggerKey) {
-        ProcessType type = measure.getProcessType() == BATCH ? BATCH :
-                STREAMING;
-        Long tms = System.currentTimeMillis();
+        ProcessType type = measure.getProcessType() == BATCH ? BATCH : STREAMING;
+        long tms = System.currentTimeMillis();
         String expired = env.getProperty("jobInstance.expired.milliseconds");
-        Long expireTms = Long.valueOf(expired != null ? expired : "604800000")
-                + tms;
-        JobInstanceBean instance = new JobInstanceBean(FINDING, pName, pGroup,
-                tms, expireTms, type);
+        Long expireTms = Long.parseLong(expired != null ? expired : "604800000") + tms;
+        JobInstanceBean instance = new JobInstanceBean(FINDING, pName, pGroup, tms, expireTms, type);
         instance.setJob(job);
         instance.setTriggerKey(triggerKey);
+        LOGGER.info("Save job instance: {}", instance);
         instanceRepo.save(instance);
     }
 
-    private void createJobInstance(TriggerKey tk, Long interval, Integer
-            repeatCount, String pJobName) throws Exception {
+    private void createJobInstance(TriggerKey tk, Long interval, Integer repeatCount, String pJobName) throws Exception {
         JobDetail jobDetail = addJobDetail(tk, pJobName);
-        Trigger trigger = genTriggerInstance(tk, jobDetail, interval,
-                repeatCount);
+        Trigger trigger = genTriggerInstance(tk, jobDetail, interval, repeatCount);
         factory.getScheduler().scheduleJob(trigger);
     }
 
@@ -330,15 +300,15 @@ public class JobInstance implements Job {
                 .build();
     }
 
-    private JobDetail addJobDetail(TriggerKey tk, String pJobName)
-            throws SchedulerException, IOException {
+    private JobDetail addJobDetail(TriggerKey tk, String pJobName) throws SchedulerException, IOException {
         Scheduler scheduler = factory.getScheduler();
         JobKey jobKey = jobKey(tk.getName(), tk.getGroup());
         JobDetail jobDetail;
-        Boolean isJobKeyExist = scheduler.checkExists(jobKey);
+        boolean isJobKeyExist = scheduler.checkExists(jobKey);
         if (isJobKeyExist) {
             jobDetail = scheduler.getJobDetail(jobKey);
         } else {
+            LOGGER.info("Create spark submit job, group: {}, name: {}", jobKey.getGroup(), job.getName());
             jobDetail = newJob(SparkSubmitJob.class)
                     .storeDurably()
                     .withIdentity(jobKey)
