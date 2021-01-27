@@ -31,6 +31,20 @@ trait StreamingOffsetCacheable extends Loggable with Serializable {
 
   def readOldCacheIndex(): Option[Long] = readSelfInfo(selfOldCacheIndex)
 
+  private def readSelfInfo(key: String): Option[Long] = {
+    OffsetCheckpointClient.read(key :: Nil).get(key).flatMap { v =>
+      try {
+        Some(v.toLong)
+      } catch {
+        case _: Throwable =>
+          error("try to read not existing value from OffsetCacheClient::readSelfInfo")
+          None
+      }
+    }
+  }
+
+  def selfOldCacheIndex: String = OffsetCheckpointClient.oldCacheIndex(selfCacheInfoPath)
+
   protected def submitCacheTime(ms: Long): Unit = {
     val map = Map[String, String](selfCacheTime -> ms.toString)
     OffsetCheckpointClient.cache(map)
@@ -59,18 +73,6 @@ trait StreamingOffsetCacheable extends Loggable with Serializable {
 
   def selfLastProcTime: String = OffsetCheckpointClient.lastProcTime(selfCacheInfoPath)
 
-  private def readSelfInfo(key: String): Option[Long] = {
-    OffsetCheckpointClient.read(key :: Nil).get(key).flatMap { v =>
-      try {
-        Some(v.toLong)
-      } catch {
-        case _: Throwable =>
-          error("try to read not existing value from OffsetCacheClient::readSelfInfo")
-          None
-      }
-    }
-  }
-
   protected def submitCleanTime(ms: Long): Unit = {
     val cleanTime = genCleanTime(ms)
     val map = Map[String, String](selfCleanTime -> cleanTime.toString)
@@ -79,15 +81,13 @@ trait StreamingOffsetCacheable extends Loggable with Serializable {
 
   protected def genCleanTime(ms: Long): Long = ms
 
-  protected def readCleanTime(): Option[Long] = readSelfInfo(selfCleanTime)
-
   def selfCleanTime: String = OffsetCheckpointClient.cleanTime(selfCacheInfoPath)
+
+  protected def readCleanTime(): Option[Long] = readSelfInfo(selfCleanTime)
 
   protected def submitOldCacheIndex(index: Long): Unit = {
     val map = Map[String, String](selfOldCacheIndex -> index.toString)
     OffsetCheckpointClient.cache(map)
   }
-
-  def selfOldCacheIndex: String = OffsetCheckpointClient.oldCacheIndex(selfCacheInfoPath)
 
 }

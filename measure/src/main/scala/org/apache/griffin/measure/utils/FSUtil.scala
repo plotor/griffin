@@ -17,13 +17,15 @@
 
 package org.apache.griffin.measure.utils
 
-import org.apache.griffin.measure.Loggable
+import java.io.File
+import java.net.URI
+
+import scala.collection.mutable.{Map => MutableMap}
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 
-import java.io.File
-import java.net.URI
-import scala.collection.mutable.{Map => MutableMap}
+import org.apache.griffin.measure.Loggable
 
 object FSUtil extends Loggable {
 

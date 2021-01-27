@@ -28,8 +28,6 @@ case class AccuracyMetric(miss: Long, total: Long) extends Metric {
 
   override def isLegal: Boolean = getTotal > 0
 
-  def getTotal: Long = total
-
   def update(delta: T): T = {
     if (delta.miss < miss) AccuracyMetric(delta.miss, total) else this
   }
@@ -51,6 +49,8 @@ case class AccuracyMetric(miss: Long, total: Long) extends Metric {
   def matchPercentage: Double = matchFraction * 100
 
   def matchFraction: Double = if (getTotal <= 0) 1 else getMatch.toDouble / getTotal
+
+  def getTotal: Long = total
 
   def getMatch: Long = total - miss
 

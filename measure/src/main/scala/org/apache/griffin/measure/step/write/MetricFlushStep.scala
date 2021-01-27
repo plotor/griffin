@@ -17,9 +17,9 @@
 
 package org.apache.griffin.measure.step.write
 
-import org.apache.griffin.measure.context.DQContext
-
 import scala.util.Try
+
+import org.apache.griffin.measure.context.DQContext
 
 /**
  * flush final metric map in context and write

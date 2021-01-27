@@ -17,10 +17,10 @@
 
 package org.apache.griffin.measure.utils
 
-import org.apache.griffin.measure.Loggable
-
-import scala.util.matching.Regex
 import scala.util.{Failure, Success, Try}
+import scala.util.matching.Regex
+
+import org.apache.griffin.measure.Loggable
 
 object TimeUtil extends Loggable {
 

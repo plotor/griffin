@@ -17,11 +17,12 @@
 
 package org.apache.griffin.measure.utils
 
+import java.io.InputStream
+
+import scala.reflect._
+
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper}
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-
-import java.io.InputStream
-import scala.reflect._
 
 object JsonUtil {
   val mapper = new ObjectMapper()

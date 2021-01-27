@@ -17,9 +17,9 @@
 
 package org.apache.griffin.measure.context.streaming.metric
 
-import org.apache.griffin.measure.Loggable
-
 import scala.collection.mutable.{Map => MutableMap}
+
+import org.apache.griffin.measure.Loggable
 
 /**
  * in streaming mode, some metrics may update,

@@ -47,14 +47,6 @@ case class AvroBatchDataConnector(
 
   val concreteFileFullPath: String = if (pathPrefix()) filePath else fileName
 
-  private def pathPrefix(): Boolean = {
-    filePath.nonEmpty
-  }
-
-  private def fileExist(): Boolean = {
-    HdfsUtil.existPath(concreteFileFullPath)
-  }
-
   def data(ms: Long): (Option[DataFrame], TimeRange) = {
     assert(fileExist(), s"Avro file $concreteFileFullPath is not exists!")
     val dfOpt = {
@@ -65,6 +57,14 @@ case class AvroBatchDataConnector(
     }
     val tmsts = readTmst(ms)
     (dfOpt, TimeRange(ms, tmsts))
+  }
+
+  private def fileExist(): Boolean = {
+    HdfsUtil.existPath(concreteFileFullPath)
+  }
+
+  private def pathPrefix(): Boolean = {
+    filePath.nonEmpty
   }
 
 }

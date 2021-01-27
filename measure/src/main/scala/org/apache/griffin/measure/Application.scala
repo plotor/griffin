@@ -39,7 +39,7 @@ import org.apache.griffin.measure.launch.streaming.StreamingDQApp
 object Application extends Loggable {
 
   def main(args: Array[String]): Unit = {
-    info(args.toString)
+    info(args.mkString("[", ", ", "]"))
     if (args.length < 2) {
       error("Usage: class <env-param> <dq-param>")
       sys.exit(-1)
@@ -66,6 +66,8 @@ object Application extends Loggable {
         error(ex.getMessage, ex)
         sys.exit(-2)
     }
+
+    // 聚合配置
     val allParam: GriffinConfig = GriffinConfig(envParam, dqParam)
 
     // 设置运行模式：batch or streaming
@@ -83,7 +85,7 @@ object Application extends Loggable {
     // 模板方法
     startup()
 
-    // 初始化 dq app
+    // 初始化 SparkContext
     dqApp.init match {
       case Success(_) =>
         info("process init success")
@@ -93,7 +95,7 @@ object Application extends Loggable {
         sys.exit(-5)
     }
 
-    // dq app run
+    // 执行 DQ Spark 任务
     val success = dqApp.run match {
       case Success(result) =>
         info("process run result: " + (if (result) "success" else "failed"))
@@ -111,7 +113,7 @@ object Application extends Loggable {
         }
     }
 
-    // dq app end
+    // 关闭 DQ App，目前都是关闭 Spark 会话
     dqApp.close match {
       case Success(_) =>
         info("process end success")

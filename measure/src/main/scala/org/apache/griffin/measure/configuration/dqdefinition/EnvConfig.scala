@@ -33,7 +33,9 @@ import org.apache.griffin.measure.configuration.enums.SinkType.SinkType
  */
 @JsonInclude(Include.NON_NULL)
 case class EnvConfig(
+    // Spark 参数配置
     @JsonProperty("spark") private val sparkParam: SparkParam,
+    // Sink 系统配置
     @JsonProperty("sinks") private val sinkParams: List[SinkParam],
     @JsonProperty("griffin.checkpoint") private val checkpointParams: List[CheckpointParam])
     extends Param {

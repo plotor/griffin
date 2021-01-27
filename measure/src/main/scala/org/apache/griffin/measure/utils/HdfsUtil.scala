@@ -17,8 +17,9 @@
 
 package org.apache.griffin.measure.utils
 
-import org.apache.griffin.measure.Loggable
 import org.apache.hadoop.fs.{FSDataInputStream, FSDataOutputStream, Path}
+
+import org.apache.griffin.measure.Loggable
 
 object HdfsUtil extends Loggable {
 
@@ -38,6 +39,8 @@ object HdfsUtil extends Loggable {
     }
   }
 
+  private def getFS(implicit path: Path) = FSUtil.getFileSystem(path.toString)
+
   def getHdfsFilePath(parentPath: String, fileName: String): String = {
     if (parentPath.endsWith(seprator)) parentPath + fileName else parentPath + seprator + fileName
   }
@@ -46,8 +49,6 @@ object HdfsUtil extends Loggable {
     implicit val path: Path = new Path(filePath)
     getFS.open(path)
   }
-
-  private def getFS(implicit path: Path) = FSUtil.getFileSystem(path.toString)
 
   def writeContent(filePath: String, message: String): Unit = {
     val out = createFile(filePath)

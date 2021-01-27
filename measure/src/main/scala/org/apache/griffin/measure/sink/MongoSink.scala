@@ -17,15 +17,16 @@
 
 package org.apache.griffin.measure.sink
 
-import org.apache.griffin.measure.utils.ParamUtil._
-import org.apache.griffin.measure.utils.TimeUtil
+import scala.concurrent.Future
+
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
 import org.mongodb.scala._
 import org.mongodb.scala.model.{Filters, UpdateOptions, Updates}
 import org.mongodb.scala.result.UpdateResult
 
-import scala.concurrent.Future
+import org.apache.griffin.measure.utils.ParamUtil._
+import org.apache.griffin.measure.utils.TimeUtil
 
 /**
  * sink metric and record to mongo

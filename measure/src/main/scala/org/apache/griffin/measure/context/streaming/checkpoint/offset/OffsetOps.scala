@@ -85,6 +85,14 @@ trait OffsetOps extends Serializable { this: OffsetCheckpoint =>
     getLongOpt(map, key).getOrElse(-1L)
   }
 
+  private def getLongOpt(map: Map[String, String], key: String): Option[Long] = {
+    try {
+      map.get(key).map(_.toLong)
+    } catch {
+      case _: Throwable => None
+    }
+  }
+
   def endOffsetCheckpoint(): Unit = {
     genFinalLastProcTime()
     genFinalCleanTime()
@@ -103,14 +111,6 @@ trait OffsetOps extends Serializable { this: OffsetCheckpoint =>
       val time = times.min
       val map = Map[String, String](finalLastProcTime -> time.toString)
       cache(map)
-    }
-  }
-
-  private def getLongOpt(map: Map[String, String], key: String): Option[Long] = {
-    try {
-      map.get(key).map(_.toLong)
-    } catch {
-      case _: Throwable => None
     }
   }
 

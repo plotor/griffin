@@ -17,10 +17,10 @@
 
 package org.apache.griffin.measure.step.write
 
+import scala.collection.mutable.ArrayBuffer
+
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{ArrayType, DataType, StructField, StructType}
-
-import scala.collection.mutable.ArrayBuffer
 
 /**
  * spark row formatter

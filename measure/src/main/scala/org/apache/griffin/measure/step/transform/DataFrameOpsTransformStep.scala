@@ -17,10 +17,10 @@
 
 package org.apache.griffin.measure.step.transform
 
+import scala.util.Try
+
 import org.apache.griffin.measure.context.DQContext
 import org.apache.griffin.measure.step.write.WriteStep
-
-import scala.util.Try
 
 /**
  * data frame ops transform step

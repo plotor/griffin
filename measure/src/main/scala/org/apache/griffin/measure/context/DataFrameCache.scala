@@ -17,10 +17,11 @@
 
 package org.apache.griffin.measure.context
 
-import org.apache.griffin.measure.Loggable
+import scala.collection.mutable
+
 import org.apache.spark.sql.DataFrame
 
-import scala.collection.mutable
+import org.apache.griffin.measure.Loggable
 
 /**
  * cache and unpersist dataframes

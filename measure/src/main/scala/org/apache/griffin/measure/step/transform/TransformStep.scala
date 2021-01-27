@@ -17,15 +17,15 @@
 
 package org.apache.griffin.measure.step.transform
 
-import org.apache.griffin.measure.context.DQContext
-import org.apache.griffin.measure.step.DQStepStatus._
-import org.apache.griffin.measure.step.{DQStep, DQStepStatus}
-import org.apache.griffin.measure.utils.ThreadUtils
-
 import scala.collection.mutable
-import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration.Duration
 import scala.util.{Failure, Success, Try}
+
+import org.apache.griffin.measure.context.DQContext
+import org.apache.griffin.measure.step.{DQStep, DQStepStatus}
+import org.apache.griffin.measure.step.DQStepStatus._
+import org.apache.griffin.measure.utils.ThreadUtils
 
 trait TransformStep extends DQStep {
 

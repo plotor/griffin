@@ -18,6 +18,7 @@
 package org.apache.griffin.measure.datasource.cache
 
 import java.util.concurrent.atomic.AtomicInteger
+
 import scala.collection.concurrent.{TrieMap, Map => ConcMap}
 
 /**

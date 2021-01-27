@@ -17,13 +17,14 @@
 
 package org.apache.griffin.measure.utils
 
-import com.google.common.util.concurrent.{MoreExecutors, ThreadFactoryBuilder}
-
 import java.util.concurrent._
+
+import scala.concurrent.{Awaitable, ExecutionContext, ExecutionContextExecutor}
 import scala.concurrent.duration.Duration
 import scala.concurrent.forkjoin.{ForkJoinPool => SForkJoinPool, ForkJoinWorkerThread => SForkJoinWorkerThread}
-import scala.concurrent.{Awaitable, ExecutionContext, ExecutionContextExecutor}
 import scala.util.control.NonFatal
+
+import com.google.common.util.concurrent.{MoreExecutors, ThreadFactoryBuilder}
 
 private[griffin] object ThreadUtils {
 

@@ -17,16 +17,17 @@
 
 package org.apache.griffin.measure.context.streaming.checkpoint.offset
 
-import org.apache.curator.framework.imps.CuratorFrameworkState
-import org.apache.curator.framework.recipes.locks.InterProcessMutex
-import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
-import org.apache.curator.retry.ExponentialBackoffRetry
-import org.apache.curator.utils.ZKPaths
-import org.apache.griffin.measure.context.streaming.checkpoint.lock.CheckpointLockInZK
-import org.apache.zookeeper.CreateMode
-
 import scala.collection.JavaConverters._
 import scala.util.matching.Regex
+
+import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
+import org.apache.curator.framework.imps.CuratorFrameworkState
+import org.apache.curator.framework.recipes.locks.InterProcessMutex
+import org.apache.curator.retry.ExponentialBackoffRetry
+import org.apache.curator.utils.ZKPaths
+import org.apache.zookeeper.CreateMode
+
+import org.apache.griffin.measure.context.streaming.checkpoint.lock.CheckpointLockInZK
 
 /**
  * leverage zookeeper for info cache
@@ -116,10 +117,6 @@ case class OffsetCheckpointInZK(config: Map[String, Any], metricName: String)
     }
   }
 
-  private def path(k: String): String = {
-    if (k.startsWith(separator)) k else separator + k
-  }
-
   private def delete(path: String): Unit = {
     try {
       client.delete().guaranteed().deletingChildrenIfNeeded().forPath(path)
@@ -183,6 +180,10 @@ case class OffsetCheckpointInZK(config: Map[String, Any], metricName: String)
         case _ => None
       }
     }.toMap
+  }
+
+  private def path(k: String): String = {
+    if (k.startsWith(separator)) k else separator + k
   }
 
   private def read(path: String): Option[String] = {

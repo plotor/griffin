@@ -17,9 +17,9 @@
 
 package org.apache.griffin.measure.context.streaming.checkpoint.lock
 
-import org.apache.curator.framework.recipes.locks.InterProcessMutex
-
 import java.util.concurrent.TimeUnit
+
+import org.apache.curator.framework.recipes.locks.InterProcessMutex
 
 case class CheckpointLockInZK(@transient mutex: InterProcessMutex) extends CheckpointLock {
 

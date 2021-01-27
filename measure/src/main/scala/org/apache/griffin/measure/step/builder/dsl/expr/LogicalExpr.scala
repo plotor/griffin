@@ -165,16 +165,16 @@ case class UnaryLogicalExpr(oprs: Seq[String], factor: LogicalExpr) extends Logi
     }
   }
 
-  def coalesceDesc: String = {
-    oprs.foldRight(factor.coalesceDesc) { (opr, fac) =>
-      s"(${trans(opr)} $fac)"
-    }
-  }
-
   private def trans(s: String): String = {
     s match {
       case "!" => "NOT"
       case _ => s.toUpperCase
+    }
+  }
+
+  def coalesceDesc: String = {
+    oprs.foldRight(factor.coalesceDesc) { (opr, fac) =>
+      s"(${trans(opr)} $fac)"
     }
   }
 
@@ -201,20 +201,20 @@ case class BinaryLogicalExpr(factor: LogicalExpr, tails: Seq[(String, LogicalExp
     if (tails.size <= 0) res else s"$res"
   }
 
-  private def trans(s: String): String = {
-    s match {
-      case "&&" => "AND"
-      case "||" => "OR"
-      case _ => s.trim.toUpperCase
-    }
-  }
-
   def coalesceDesc: String = {
     val res = tails.foldLeft(factor.coalesceDesc) { (fac, tail) =>
       val (opr, expr) = tail
       s"$fac ${trans(opr)} ${expr.coalesceDesc}"
     }
     if (tails.size <= 0) res else s"$res"
+  }
+
+  private def trans(s: String): String = {
+    s match {
+      case "&&" => "AND"
+      case "||" => "OR"
+      case _ => s.trim.toUpperCase
+    }
   }
 
   override def extractSelf: Expr = {

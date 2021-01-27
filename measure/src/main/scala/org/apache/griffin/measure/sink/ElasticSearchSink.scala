@@ -17,11 +17,12 @@
 
 package org.apache.griffin.measure.sink
 
-import org.apache.griffin.measure.utils.ParamUtil._
-import org.apache.griffin.measure.utils.{HttpUtil, JsonUtil, TimeUtil}
+import scala.concurrent.Future
+
 import org.apache.spark.sql.DataFrame
 
-import scala.concurrent.Future
+import org.apache.griffin.measure.utils.{HttpUtil, JsonUtil, TimeUtil}
+import org.apache.griffin.measure.utils.ParamUtil._
 
 /**
  * sink metric and record through http request

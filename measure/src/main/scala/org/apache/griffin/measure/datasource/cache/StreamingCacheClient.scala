@@ -17,20 +17,22 @@
 
 package org.apache.griffin.measure.datasource.cache
 
+import java.util.concurrent.TimeUnit
+
+import scala.collection.mutable
+import scala.util.Random
+
+import org.apache.spark.sql._
+
 import org.apache.griffin.measure.Loggable
 import org.apache.griffin.measure.context.TimeRange
 import org.apache.griffin.measure.context.streaming.checkpoint.lock.CheckpointLock
 import org.apache.griffin.measure.context.streaming.checkpoint.offset.OffsetCheckpointClient
 import org.apache.griffin.measure.datasource.TimestampStorage
 import org.apache.griffin.measure.step.builder.ConstantColumns
+import org.apache.griffin.measure.utils.{HdfsUtil, TimeUtil}
 import org.apache.griffin.measure.utils.DataFrameUtil._
 import org.apache.griffin.measure.utils.ParamUtil._
-import org.apache.griffin.measure.utils.{HdfsUtil, TimeUtil}
-import org.apache.spark.sql._
-
-import java.util.concurrent.TimeUnit
-import scala.collection.mutable
-import scala.util.Random
 
 /**
  * data source cache in streaming mode
@@ -185,18 +187,6 @@ trait StreamingCacheClient
   private def readDataFrameOpt(dfr: DataFrameReader, path: String): Option[DataFrame] = {
     val df = readDataFrame(dfr, path)
     if (df.count() > 0) Some(df) else None
-  }
-
-  def deltaTimeRange[T <: Seq[String]: Manifest]: (Long, Long) = {
-    def negative(n: Long): Long = if (n <= 0) n else 0
-    param.get(_TimeRange) match {
-      case Some(seq: T) =>
-        val nseq = seq.flatMap(TimeUtil.milliseconds)
-        val ns = negative(nseq.headOption.getOrElse(0))
-        val ne = negative(nseq.tail.headOption.getOrElse(0))
-        (ns, ne)
-      case _ => (0, 0)
-    }
   }
 
   /**
@@ -369,6 +359,18 @@ trait StreamingCacheClient
     // next clean time
     val nextCleanTime = timeRange._2 + deltaTimeRange._1
     submitCleanTime(nextCleanTime)
+  }
+
+  def deltaTimeRange[T <: Seq[String]: Manifest]: (Long, Long) = {
+    def negative(n: Long): Long = if (n <= 0) n else 0
+    param.get(_TimeRange) match {
+      case Some(seq: T) =>
+        val nseq = seq.flatMap(TimeUtil.milliseconds)
+        val ns = negative(nseq.headOption.getOrElse(0))
+        val ne = negative(nseq.tail.headOption.getOrElse(0))
+        (ns, ne)
+      case _ => (0, 0)
+    }
   }
 
   protected def clearTmst(t: Long): mutable.SortedSet[Long] = timestampStorage.remove(t)

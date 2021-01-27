@@ -17,12 +17,12 @@
 
 package org.apache.griffin.measure.utils
 
+import scala.util.matching.Regex
+
 import org.apache.http.client.methods.{HttpDelete, HttpGet, HttpPost, HttpPut}
 import org.apache.http.client.utils.URIBuilder
 import org.apache.http.entity.{ContentType, StringEntity}
 import org.apache.http.impl.client.{BasicResponseHandler, HttpClientBuilder}
-
-import scala.util.matching.Regex
 
 object HttpUtil {
 

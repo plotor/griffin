@@ -135,6 +135,18 @@ case class HdfsSink(config: Map[String, Any], jobName: String, timeStamp: Long) 
     }
   }
 
+  private def sinkRecords2Hdfs(hdfsPath: String, records: Iterable[String]): Unit = {
+    try {
+      HdfsUtil.withHdfsFile(hdfsPath, appendIfExists = false) { out =>
+        records.map { record =>
+          out.write((record + "\n").getBytes("utf-8"))
+        }
+      }
+    } catch {
+      case e: Throwable => error(e.getMessage, e)
+    }
+  }
+
   override def sinkBatchRecords(dataset: DataFrame, key: Option[String] = None): Unit = {
     sinkRecords(dataset.toJSON.rdd, key.getOrElse(""))
   }
@@ -166,18 +178,6 @@ case class HdfsSink(config: Map[String, Any], jobName: String, timeStamp: Long) 
             val hdfsPath = if (gid == 0) path else withSuffix(path, gid.toString)
             sinkRecords2Hdfs(hdfsPath, recs)
           }
-        }
-      }
-    } catch {
-      case e: Throwable => error(e.getMessage, e)
-    }
-  }
-
-  private def sinkRecords2Hdfs(hdfsPath: String, records: Iterable[String]): Unit = {
-    try {
-      HdfsUtil.withHdfsFile(hdfsPath, appendIfExists = false) { out =>
-        records.map { record =>
-          out.write((record + "\n").getBytes("utf-8"))
         }
       }
     } catch {

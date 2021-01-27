@@ -17,14 +17,15 @@
 
 package org.apache.griffin.measure.step.write
 
+import scala.util.Try
+
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql._
+
 import org.apache.griffin.measure.configuration.enums._
 import org.apache.griffin.measure.context.DQContext
 import org.apache.griffin.measure.step.builder.ConstantColumns
 import org.apache.griffin.measure.utils.JsonUtil
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql._
-
-import scala.util.Try
 
 /**
  * write records needs to be sink

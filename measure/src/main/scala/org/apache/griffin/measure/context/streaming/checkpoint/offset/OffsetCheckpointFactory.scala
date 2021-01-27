@@ -17,10 +17,10 @@
 
 package org.apache.griffin.measure.context.streaming.checkpoint.offset
 
-import org.apache.griffin.measure.configuration.dqdefinition.CheckpointParam
-
 import scala.util.Try
 import scala.util.matching.Regex
+
+import org.apache.griffin.measure.configuration.dqdefinition.CheckpointParam
 
 case class OffsetCheckpointFactory(
     checkpointParams: Iterable[CheckpointParam],

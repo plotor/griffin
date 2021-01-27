@@ -17,6 +17,15 @@
 
 package org.apache.griffin.measure.launch.streaming
 
+import java.util.{Date, Timer, TimerTask}
+import java.util.concurrent.{Executors, ThreadPoolExecutor, TimeUnit}
+
+import scala.util.Try
+
+import org.apache.spark.SparkConf
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.streaming.{Milliseconds, StreamingContext}
+
 import org.apache.griffin.measure.Loggable
 import org.apache.griffin.measure.configuration.dqdefinition._
 import org.apache.griffin.measure.configuration.enums.ProcessType.StreamingProcessType
@@ -31,13 +40,6 @@ import org.apache.griffin.measure.launch.DQApp
 import org.apache.griffin.measure.sink.Sink
 import org.apache.griffin.measure.step.builder.udf.GriffinUDFAgent
 import org.apache.griffin.measure.utils.{HdfsUtil, TimeUtil}
-import org.apache.spark.SparkConf
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.streaming.{Milliseconds, StreamingContext}
-
-import java.util.concurrent.{Executors, ThreadPoolExecutor, TimeUnit}
-import java.util.{Date, Timer, TimerTask}
-import scala.util.Try
 
 case class StreamingDQApp(allParam: GriffinConfig) extends DQApp {
 

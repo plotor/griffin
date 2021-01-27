@@ -17,12 +17,12 @@
 
 package org.apache.griffin.measure.sink
 
+import scala.util.{Failure, Success, Try}
+
 import org.apache.griffin.measure.Loggable
 import org.apache.griffin.measure.configuration.dqdefinition.SinkParam
 import org.apache.griffin.measure.configuration.enums.SinkType._
 import org.apache.griffin.measure.utils.ParamUtil._
-
-import scala.util.{Failure, Success, Try}
 
 /**
  * SinkFactory, responsible for creation of Batch and Streaming Sinks based on the definition

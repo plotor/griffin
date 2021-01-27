@@ -63,7 +63,9 @@ case class BatchDQApp(allParam: GriffinConfig) extends DQApp {
   def run: Try[Boolean] = {
     // 执行 {...} 逻辑，并打印执行开销
     val result = CommonUtils.timeThis({
+      // measure 的时间
       val measureTime = getMeasureTime
+      // 构造 DQ 任务上下文 ID，默认就是时间戳
       val contextId = ContextId(measureTime)
 
       // 获取并初始化数据源列表

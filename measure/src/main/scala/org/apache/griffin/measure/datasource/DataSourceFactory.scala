@@ -33,9 +33,9 @@ object DataSourceFactory extends Loggable {
       sparkSession: SparkSession,
       ssc: StreamingContext,
       dataSources: Seq[DataSourceParam]): Seq[DataSource] = {
-    dataSources.zipWithIndex.flatMap { pair =>
-      val (param, index) = pair
-      getDataSource(sparkSession, ssc, param, index)
+    // 基于 DataSource 参数构造 DataSource 实例
+    dataSources.zipWithIndex.flatMap {
+      case (param, index) => getDataSource(sparkSession, ssc, param, index)
     }
   }
 
