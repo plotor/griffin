@@ -68,12 +68,12 @@ case class BatchDQApp(allParam: GriffinConfig) extends DQApp {
       // 构造 DQ 任务上下文 ID，默认就是时间戳
       val contextId = ContextId(measureTime)
 
-      // 获取并初始化数据源列表
+      // 获取并初始化数据源实例集合
       val dataSources =
         DataSourceFactory.getDataSources(sparkSession, null, dqParam.getDataSources)
       dataSources.foreach(_.init())
 
-      // 创建 DQ 上下文
+      // 创建 DQ Batch 任务上下文对象
       dqContext =
         DQContext(contextId, metricName, dataSources, sinkParams, BatchProcessType)(sparkSession)
 
@@ -82,7 +82,7 @@ case class BatchDQApp(allParam: GriffinConfig) extends DQApp {
       // 调用各个 sink 的 open 方法
       dqContext.getSinks.foreach(_.open(applicationId))
 
-      // 基于规则参数构造 DQ 任务
+      // 基于任务上下文和规则参数构造 DQ Batch 任务
       val dqJob = DQJobBuilder.buildDQJob(dqContext, dqParam.getEvaluateRule)
 
       // 执行 DQ 任务

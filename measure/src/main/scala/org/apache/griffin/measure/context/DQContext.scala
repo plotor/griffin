@@ -48,7 +48,7 @@ case class DQContext(
   val dataSourceNames: Seq[String] = {
     // sort data source names, put baseline data source name to the head
     val (blOpt, others) = dataSources.foldLeft((None: Option[String], Nil: Seq[String])) {
-      (ret, ds) =>
+      case (ret, ds) =>
         val (opt, seq) = ret
         if (opt.isEmpty && ds.isBaseline) (Some(ds.name), seq) else (opt, seq :+ ds.name)
     }
@@ -63,6 +63,7 @@ case class DQContext(
   implicit val encoder: Encoder[String] = Encoders.STRING
   val dataSourceTimeRanges: Map[String, TimeRange] = loadDataSources()
   private val sinkFactory = SinkFactory(sinkParams, name)
+  // 基于参数配置构造 Sink 实例列表
   private val defaultSinks: Seq[Sink] = createSinks(contextId.timestamp)
 
   printTimeRanges()

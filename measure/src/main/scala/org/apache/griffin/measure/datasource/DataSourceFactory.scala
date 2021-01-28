@@ -29,6 +29,13 @@ import org.apache.griffin.measure.datasource.connector.DataConnectorFactory
 
 object DataSourceFactory extends Loggable {
 
+  /**
+   * 基于配置构造并返回对应的数据源实例集合
+   * @param sparkSession
+   * @param ssc
+   * @param dataSources
+   * @return
+   */
   def getDataSources(
       sparkSession: SparkSession,
       ssc: StreamingContext,
@@ -59,6 +66,7 @@ object DataSourceFactory extends Loggable {
 
     connectorParamsOpt match {
       case Some(connectorParam) =>
+        // 获取对应的 Connector 实例
         val dataConnectors = DataConnectorFactory.getDataConnector(
           sparkSession,
           ssc,
