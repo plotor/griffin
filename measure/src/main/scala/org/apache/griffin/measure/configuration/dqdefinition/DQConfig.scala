@@ -43,11 +43,16 @@ import org.apache.griffin.measure.configuration.enums.SinkType.SinkType
  */
 @JsonInclude(Include.NON_NULL)
 case class DQConfig(
+    // DQ 任务名
     @JsonProperty("name") private val name: String,
     @JsonProperty("timestamp") private val timestamp: Long,
+    // 运行模式：离线 or 流式
     @JsonProperty("process.type") private val procType: String,
+    // 数据源配置
     @JsonProperty("data.sources") private val dataSources: List[DataSourceParam],
+    // 监控规则
     @JsonProperty("evaluate.rule") private val evaluateRule: EvaluateRuleParam,
+    // Sink 系统名称列表
     @JsonProperty("sinks") private val sinks: List[String] = Nil)
     extends Param {
 

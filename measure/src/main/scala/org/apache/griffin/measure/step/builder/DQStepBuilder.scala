@@ -35,6 +35,11 @@ trait DQStepBuilder extends Loggable with Serializable {
 
   def buildDQStep(context: DQContext, param: ParamType): Option[DQStep]
 
+  /**
+   * 如果指定了 name 则返回该 name，否则按顺序生成一个
+   * @param name
+   * @return
+   */
   protected def getStepName(name: String): String = {
     if (StringUtils.isNotBlank(name)) name
     else DQStepNameGenerator.genName
@@ -62,8 +67,10 @@ object DQStepBuilder {
 
   def buildStepOptByRuleParam(context: DQContext, ruleParam: RuleParam): Option[DQStep] = {
     val dslType = ruleParam.getDslType
+    // 获取数据源名称列表，baseline 类型在前
     val dsNames = context.dataSourceNames
     val funcNames = context.functionNames
+    // 基于 DSL 类型选择对应的构造器
     val dqStepOpt = getRuleParamStepBuilder(dslType, dsNames, funcNames)
       .flatMap(_.buildDQStep(context, ruleParam))
     dqStepOpt.toSeq

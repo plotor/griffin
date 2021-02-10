@@ -65,7 +65,7 @@ case class BatchDQApp(allParam: GriffinConfig) extends DQApp {
     val result = CommonUtils.timeThis({
       // measure 的时间
       val measureTime = getMeasureTime
-      // 构造 DQ 任务上下文 ID，默认就是时间戳
+      // 构造 DQ 任务上下文 ID，默认就是 measure 时间戳
       val contextId = ContextId(measureTime)
 
       // 获取并初始化数据源实例集合
@@ -79,7 +79,7 @@ case class BatchDQApp(allParam: GriffinConfig) extends DQApp {
 
       // start id
       val applicationId = sparkSession.sparkContext.applicationId
-      // 调用各个 sink 的 open 方法
+      // 调用各个 Sink#open 方法用于初始化到对应 Sink 系统的连接（按需）
       dqContext.getSinks.foreach(_.open(applicationId))
 
       // 基于任务上下文和规则参数构造 DQ Batch 任务

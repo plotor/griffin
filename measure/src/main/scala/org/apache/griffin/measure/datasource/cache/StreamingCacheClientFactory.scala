@@ -47,6 +47,7 @@ object StreamingCacheClientFactory extends Loggable {
       tmstCache: TimestampStorage): Option[StreamingCacheClient] = {
     checkpointOpt.flatMap { param =>
       try {
+        // 获取数据源类型
         val tp = param.getString(_type, "")
         val dsCache = tp match {
           case ParquetRegex() =>

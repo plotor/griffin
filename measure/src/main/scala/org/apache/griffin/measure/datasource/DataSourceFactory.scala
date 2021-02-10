@@ -40,8 +40,9 @@ object DataSourceFactory extends Loggable {
       sparkSession: SparkSession,
       ssc: StreamingContext,
       dataSources: Seq[DataSourceParam]): Seq[DataSource] = {
-    // 基于 DataSource 参数构造 DataSource 实例
+    // 遍历 DataSource 参数配置列表，基于参数配置构造对应的 DataSource 实例
     dataSources.zipWithIndex.flatMap {
+      // (DataSourceParam, index)
       case (param, index) => getDataSource(sparkSession, ssc, param, index)
     }
   }
@@ -51,7 +52,9 @@ object DataSourceFactory extends Loggable {
       ssc: StreamingContext,
       dataSourceParam: DataSourceParam,
       index: Int): Option[DataSource] = {
+    // 获取数据源名称
     val name = dataSourceParam.getName
+    // 创建 ts 管理实例
     val timestampStorage = TimestampStorage()
 
     // for streaming data cache
@@ -62,12 +65,13 @@ object DataSourceFactory extends Loggable {
       index,
       timestampStorage)
 
+    // 获取 DataConnectorParam
     val connectorParamsOpt = dataSourceParam.getConnector
 
     connectorParamsOpt match {
       case Some(connectorParam) =>
-        // 获取对应的 Connector 实例
-        val dataConnectors = DataConnectorFactory.getDataConnector(
+        // 获取对应的数据源 Connector 实例
+        val dataConnector = DataConnectorFactory.getDataConnector(
           sparkSession,
           ssc,
           connectorParam,
@@ -77,7 +81,7 @@ object DataSourceFactory extends Loggable {
           case _ => None
         }
 
-        Some(DataSource(name, dataSourceParam, dataConnectors, streamingCacheClientOpt))
+        Some(DataSource(name, dataSourceParam, dataConnector, streamingCacheClientOpt))
       case None => None
     }
   }

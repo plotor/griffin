@@ -45,7 +45,9 @@ object Application extends Loggable {
       sys.exit(-1)
     }
 
+    // env 配置文件
     val envParamFile = args(0)
+    // dq 配置文件
     val dqParamFile = args(1)
 
     info(envParamFile)
@@ -59,7 +61,7 @@ object Application extends Loggable {
         sys.exit(-2)
     }
 
-    // 加载 DQ 相关配置
+    // 加载 dq 相关配置
     val dqParam = readParamFile[DQConfig](dqParamFile) match {
       case Success(p) => p
       case Failure(ex) =>
@@ -67,15 +69,15 @@ object Application extends Loggable {
         sys.exit(-2)
     }
 
-    // 聚合配置
+    // 聚合 env 和 dq 配置
     val allParam: GriffinConfig = GriffinConfig(envParam, dqParam)
 
     // 设置运行模式：batch or streaming
     val procType = ProcessType.withNameWithDefault(allParam.getDqConfig.getProcType)
     val dqApp: DQApp = procType match {
-      // 构建 Batch App
+      // 构建 Batch 类型任务
       case BatchProcessType => BatchDQApp(allParam)
-      // 构建 Streaming App
+      // 构建 Streaming 类型任务
       case StreamingProcessType => StreamingDQApp(allParam)
       case _ =>
         error(s"$procType is unsupported process type!")

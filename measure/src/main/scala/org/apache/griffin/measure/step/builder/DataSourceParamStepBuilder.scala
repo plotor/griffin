@@ -30,10 +30,12 @@ trait DataSourceParamStepBuilder extends DQStepBuilder {
   type ParamType = DataSourceParam
 
   def buildDQStep(context: DQContext, param: ParamType): Option[DQStep] = {
+    // 获取 step name，如果指定了 name 则返回该 name，否则按顺序生成一个
     val name = getStepName(param.getName)
 
     param.getConnector match {
       case Some(dc) =>
+        // 目前 buildReadSteps 方法均返回 None
         val steps = buildReadSteps(context, dc)
         if (steps.isDefined) Some(UnionReadStep(name, Seq(steps.get)))
         else None

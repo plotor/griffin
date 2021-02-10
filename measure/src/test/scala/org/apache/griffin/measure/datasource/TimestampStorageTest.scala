@@ -21,6 +21,18 @@ import org.scalatest._
 
 class TimestampStorageTest extends FlatSpec with Matchers {
 
+  it should "be able test crud" in {
+    val storage = TimestampStorage()
+    storage.insert(5L)
+    storage.insert(Seq(10L until 20L: _*))
+    println(storage)
+
+    storage.remove(11L)
+    storage.remove(18L)
+    storage.remove(0L)
+    println(storage)
+  }
+
   "timestamp storage" should "be able to insert a timestamp" in {
     val timestampStorage = TimestampStorage()
     timestampStorage.insert(1L)

@@ -35,8 +35,9 @@ import org.apache.griffin.measure.configuration.enums.SinkType.SinkType
 case class EnvConfig(
     // Spark 参数配置
     @JsonProperty("spark") private val sparkParam: SparkParam,
-    // Sink 系统配置
+    // Sink 系统配置（目前支持 Console, Log, HDFS, HTTP, ElasticSearch, MongoDB, Custom）
     @JsonProperty("sinks") private val sinkParams: List[SinkParam],
+    // Griffin checkpoint 参数配置
     @JsonProperty("griffin.checkpoint") private val checkpointParams: List[CheckpointParam])
     extends Param {
 
@@ -75,12 +76,12 @@ case class EnvConfig(
  */
 @JsonInclude(Include.NON_NULL)
 case class SparkParam(
-    @JsonProperty("log.level") private val logLevel: String,
-    @JsonProperty("checkpoint.dir") private val cpDir: String,
-    @JsonProperty("batch.interval") private val batchInterval: String,
-    @JsonProperty("process.interval") private val processInterval: String,
-    @JsonProperty("config") private val config: Map[String, String],
-    @JsonProperty("init.clear") private val initClear: Boolean)
+    @JsonProperty("log.level") private val logLevel: String, // 日志级别
+    @JsonProperty("checkpoint.dir") private val cpDir: String, // checkpoint 目录（for spark-streaming）
+    @JsonProperty("batch.interval") private val batchInterval: String, // batch interval for spark-streaming
+    @JsonProperty("process.interval") private val processInterval: String, // process interval for spark-streaming
+    @JsonProperty("config") private val config: Map[String, String], // 其它配置项
+    @JsonProperty("init.clear") private val initClear: Boolean) // 是否在启动的时候清空 checkpoint 目录
     extends Param {
   def getLogLevel: String = if (logLevel != null) logLevel else "WARN"
   def getCpDir: String = if (cpDir != null) cpDir else ""

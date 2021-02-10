@@ -45,6 +45,7 @@ case class DQContext(
   val metricWrapper: MetricWrapper = MetricWrapper(name, sparkSession.sparkContext.applicationId)
   val writeMode: WriteMode = WriteMode.defaultMode(procType)
 
+  // 重新组织数据源 name，将 baseline 类型的数据源排在前列
   val dataSourceNames: Seq[String] = {
     // sort data source names, put baseline data source name to the head
     val (blOpt, others) = dataSources.foldLeft((None: Option[String], Nil: Seq[String])) {

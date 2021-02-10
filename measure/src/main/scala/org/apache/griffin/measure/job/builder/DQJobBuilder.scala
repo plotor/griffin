@@ -51,10 +51,12 @@ object DQJobBuilder {
     val dsSteps = context.dataSources.flatMap { dataSource =>
       DQStepBuilder.buildStepOptByDataSourceParam(context, dataSource.dsParam)
     }
+
     // build steps by rules
     val ruleSteps = ruleParams.flatMap { ruleParam =>
       DQStepBuilder.buildStepOptByRuleParam(context, ruleParam)
     }
+
     // metric flush step
     val metricFlushStep = MetricFlushStep()
 
