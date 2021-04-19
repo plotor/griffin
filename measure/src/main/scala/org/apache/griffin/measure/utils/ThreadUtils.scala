@@ -21,7 +21,6 @@ import java.util.concurrent._
 
 import scala.concurrent.{Awaitable, ExecutionContext, ExecutionContextExecutor}
 import scala.concurrent.duration.Duration
-import scala.concurrent.forkjoin.{ForkJoinPool => SForkJoinPool, ForkJoinWorkerThread => SForkJoinWorkerThread}
 import scala.util.control.NonFatal
 
 import com.google.common.util.concurrent.{MoreExecutors, ThreadFactoryBuilder}
@@ -39,19 +38,19 @@ private[griffin] object ThreadUtils {
   def sameThread: ExecutionContextExecutor = sameThreadExecutionContext
 
   /**
+   * Create a thread factory that names threads with a prefix and also sets the threads to daemon.
+   */
+  def namedThreadFactory(prefix: String): ThreadFactory = {
+    new ThreadFactoryBuilder().setDaemon(true).setNameFormat(prefix + "-%d").build()
+  }
+
+  /**
    * Wrapper over newCachedThreadPool. Thread names are formatted as prefix-ID, where ID is a
    * unique, sequentially assigned integer.
    */
   def newDaemonCachedThreadPool(prefix: String): ThreadPoolExecutor = {
     val threadFactory = namedThreadFactory(prefix)
     Executors.newCachedThreadPool(threadFactory).asInstanceOf[ThreadPoolExecutor]
-  }
-
-  /**
-   * Create a thread factory that names threads with a prefix and also sets the threads to daemon.
-   */
-  def namedThreadFactory(prefix: String): ThreadFactory = {
-    new ThreadFactoryBuilder().setDaemon(true).setNameFormat(prefix + "-%d").build()
   }
 
   /**
@@ -169,15 +168,15 @@ private[griffin] object ThreadUtils {
   /**
    * Construct a new Scala ForkJoinPool with a specified max parallelism and name prefix.
    */
-  def newForkJoinPool(prefix: String, maxThreadNumber: Int): SForkJoinPool = {
+  def newForkJoinPool(prefix: String, maxThreadNumber: Int): ForkJoinPool = {
     // Custom factory to set thread names
-    val factory = new SForkJoinPool.ForkJoinWorkerThreadFactory {
-      override def newThread(pool: SForkJoinPool): SForkJoinWorkerThread =
-        new SForkJoinWorkerThread(pool) {
+    val factory = new ForkJoinPool.ForkJoinWorkerThreadFactory {
+      override def newThread(pool: ForkJoinPool): ForkJoinWorkerThread =
+        new ForkJoinWorkerThread(pool) {
           setName(prefix + "-" + super.getName)
         }
     }
-    new SForkJoinPool(
+    new ForkJoinPool(
       maxThreadNumber,
       factory,
       null, // handler
