@@ -30,7 +30,8 @@ import org.apache.griffin.measure.datasource.connector.DataConnectorFactory
 object DataSourceFactory extends Loggable {
 
   /**
-   * 基于配置构造并返回对应的数据源实例集合
+   * 基于数据源配置，构造并返回对应的 DataSource 实例集合
+   *
    * @param sparkSession
    * @param ssc
    * @param dataSources
@@ -39,19 +40,30 @@ object DataSourceFactory extends Loggable {
   def getDataSources(
       sparkSession: SparkSession,
       ssc: StreamingContext,
-      dataSources: Seq[DataSourceParam]): Seq[DataSource] = {
+      dataSources: Seq[DataSourceParam]): Seq[DataSource] = { // 任务的数据源配置列表
     // 遍历 DataSource 参数配置列表，基于参数配置构造对应的 DataSource 实例
     dataSources.zipWithIndex.flatMap {
       // (DataSourceParam, index)
-      case (param, index) => getDataSource(sparkSession, ssc, param, index)
+      case (param, index) =>
+        // 解析 Data Source 配置，基于类型构造对应的 Connector 实例，封装成 DataSource 实例返回
+        getDataSource(sparkSession, ssc, param, index)
     }
   }
 
+  /**
+   * 解析 Data Source 配置，基于类型构造对应的 Connector 实例，封装成 DataSource 实例返回
+   *
+   * @param sparkSession
+   * @param ssc
+   * @param dataSourceParam
+   * @param index
+   * @return
+   */
   private def getDataSource(
       sparkSession: SparkSession,
       ssc: StreamingContext,
       dataSourceParam: DataSourceParam,
-      index: Int): Option[DataSource] = {
+      index: Int): Option[DataSource] = { // index 参数用于 streaming
     // 获取数据源名称
     val name = dataSourceParam.getName
     // 创建 ts 管理实例
@@ -65,12 +77,12 @@ object DataSourceFactory extends Loggable {
       index,
       timestampStorage)
 
-    // 获取 DataConnectorParam
+    // 获取数据源 Connector 参数配置
     val connectorParamsOpt = dataSourceParam.getConnector
 
     connectorParamsOpt match {
       case Some(connectorParam) =>
-        // 获取对应的数据源 Connector 实例
+        // 基于参数配置构造对应的数据源 Connector 实例
         val dataConnector = DataConnectorFactory.getDataConnector(
           sparkSession,
           ssc,

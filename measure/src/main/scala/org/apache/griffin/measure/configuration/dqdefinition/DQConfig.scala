@@ -24,10 +24,7 @@ import org.apache.commons.lang.StringUtils
 import org.apache.griffin.measure.configuration.enums._
 import org.apache.griffin.measure.configuration.enums.DqType._
 import org.apache.griffin.measure.configuration.enums.DslType.{DslType, GriffinDsl}
-import org.apache.griffin.measure.configuration.enums.FlattenType.{
-  DefaultFlattenType,
-  FlattenType
-}
+import org.apache.griffin.measure.configuration.enums.FlattenType.{DefaultFlattenType, FlattenType}
 import org.apache.griffin.measure.configuration.enums.OutputType.{OutputType, UnknownOutputType}
 import org.apache.griffin.measure.configuration.enums.SinkType.SinkType
 
@@ -62,6 +59,11 @@ case class DQConfig(
 
   def getProcType: String = procType
 
+  /**
+   * 获取当前 DQ 任务的所有数据源配置
+   *
+   * @return
+   */
   def getDataSources: Seq[DataSourceParam] = {
     dataSources
       .foldLeft((Nil: Seq[DataSourceParam], Set[String]())) { (ret, ds) =>

@@ -39,6 +39,7 @@ case class BatchDQApp(allParam: GriffinConfig) extends DQApp {
   val dqParam: DQConfig = allParam.getDqConfig
 
   val sparkParam: SparkParam = envParam.getSparkParam
+  // DQ Job 名称
   val metricName: String = dqParam.getName
   val sinkParams: Seq[SinkParam] = getSinkParams
 
@@ -49,7 +50,8 @@ case class BatchDQApp(allParam: GriffinConfig) extends DQApp {
   def init: Try[_] = Try {
     // build spark 2.0+ application context
     val conf = new SparkConf().setAppName(metricName)
-    conf.setAll(sparkParam.getConfig)
+    conf.setAll(sparkParam.getConfig) // 设置用户自定义 spark 参数
+    // 允许对两个 DataFrame 执行 join 操作
     conf.set("spark.sql.crossJoin.enabled", "true")
     sparkSession = SparkSession.builder().config(conf).enableHiveSupport().getOrCreate()
     val logLevel = getGriffinLogLevel
@@ -68,10 +70,10 @@ case class BatchDQApp(allParam: GriffinConfig) extends DQApp {
       // 构造 DQ 任务上下文 ID，默认就是 measure 时间戳
       val contextId = ContextId(measureTime)
 
-      // 获取并初始化数据源实例集合
+      // 基于数据源配置，构造并返回对应的 DataSource 实例集合
       val dataSources =
         DataSourceFactory.getDataSources(sparkSession, null, dqParam.getDataSources)
-      dataSources.foreach(_.init())
+      dataSources.foreach(_.init()) // 目前仅 Streaming 监控任务有初始化逻辑
 
       // 创建 DQ Batch 任务上下文对象
       dqContext =
@@ -79,10 +81,10 @@ case class BatchDQApp(allParam: GriffinConfig) extends DQApp {
 
       // start id
       val applicationId = sparkSession.sparkContext.applicationId
-      // 调用各个 Sink#open 方法用于初始化到对应 Sink 系统的连接（按需）
+      // 调用 Sink#open 方法初始化到对应 Sink 系统的连接（按需）
       dqContext.getSinks.foreach(_.open(applicationId))
 
-      // 基于任务上下文和规则参数构造 DQ Batch 任务
+      // 基于任务上下文和规则配置构造 DQ Batch 任务
       val dqJob = DQJobBuilder.buildDQJob(dqContext, dqParam.getEvaluateRule)
 
       // 执行 DQ 任务

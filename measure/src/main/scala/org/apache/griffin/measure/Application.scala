@@ -87,7 +87,7 @@ object Application extends Loggable {
     // 模板方法
     startup()
 
-    // 初始化 SparkContext
+    // 创建并初始化 SparkSession
     dqApp.init match {
       case Success(_) =>
         info("process init success")
@@ -135,7 +135,7 @@ object Application extends Loggable {
 
   def readParamFile[T <: Param](file: String)(implicit m: ClassTag[T]): Try[T] = {
     val paramReader = ParamReaderFactory.getParamReader(file)
-    // 基于 ParamReader 读取配置
+    // 基于 ParamReader 读取配置，JSON 格式
     paramReader.readConfig[T]
   }
 

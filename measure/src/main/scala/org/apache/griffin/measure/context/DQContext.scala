@@ -64,7 +64,7 @@ case class DQContext(
   implicit val encoder: Encoder[String] = Encoders.STRING
   val dataSourceTimeRanges: Map[String, TimeRange] = loadDataSources()
   private val sinkFactory = SinkFactory(sinkParams, name)
-  // 基于参数配置构造 Sink 实例列表
+  // 基于任务配置构造并验证 Sink 实例，一个任务可以配置多个 Sink
   private val defaultSinks: Seq[Sink] = createSinks(contextId.timestamp)
 
   printTimeRanges()

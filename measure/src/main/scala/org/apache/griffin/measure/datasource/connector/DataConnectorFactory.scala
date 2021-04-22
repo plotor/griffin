@@ -51,12 +51,13 @@ object DataConnectorFactory extends Loggable {
 
   /**
    * create data connector
-   * @param sparkSession     spark env
-   * @param ssc              spark streaming env
-   * @param dcParam          data connector param
-   * @param tmstCache        same tmst cache in one data source
-   * @param streamingCacheClientOpt   for streaming cache
-   * @return   data connector
+   *
+   * @param sparkSession            spark env
+   * @param ssc                     spark streaming env
+   * @param dcParam                 data connector param
+   * @param tmstCache               same tmst cache in one data source
+   * @param streamingCacheClientOpt for streaming cache
+   * @return data connector
    */
   def getDataConnector(
       sparkSession: SparkSession,
@@ -64,16 +65,21 @@ object DataConnectorFactory extends Loggable {
       dcParam: DataConnectorParam,
       tmstCache: TimestampStorage,
       streamingCacheClientOpt: Option[StreamingCacheClient]): Try[DataConnector] = {
-    val conType = dcParam.getType
+    val conType = dcParam.getType // 获取数据源连接器类型，对应 connector.type 配置
     Try {
       conType match {
+        // Hive 类型
         case HiveRegex() => HiveBatchDataConnector(sparkSession, dcParam, tmstCache)
         case AvroRegex() => AvroBatchDataConnector(sparkSession, dcParam, tmstCache)
+        // File 类型，支持 Parquet、Avro、ORC、CSV、TSV 和 Text
         case FileRegex() => FileBasedDataConnector(sparkSession, dcParam, tmstCache)
         case TextDirRegex() => TextDirBatchDataConnector(sparkSession, dcParam, tmstCache)
+        // ES 类型
         case ElasticSearchRegex() => ElasticSearchDataConnector(sparkSession, dcParam, tmstCache)
+        // 自定义，对于 Batch 需要实现 BatchDataConnector；对于 Streaming 需要实现 StreamingDataConnector
         case CustomRegex() =>
           getCustomConnector(sparkSession, ssc, dcParam, tmstCache, streamingCacheClientOpt)
+        // Kafka 类型
         case KafkaRegex() =>
           getStreamingDataConnector(
             sparkSession,
@@ -81,6 +87,7 @@ object DataConnectorFactory extends Loggable {
             dcParam,
             tmstCache,
             streamingCacheClientOpt)
+        // JDBC 类型
         case JDBCRegex() => JDBCBasedDataConnector(sparkSession, dcParam, tmstCache)
         case _ => throw new Exception("connector creation error!")
       }
