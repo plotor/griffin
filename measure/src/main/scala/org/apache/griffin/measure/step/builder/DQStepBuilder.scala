@@ -37,6 +37,7 @@ trait DQStepBuilder extends Loggable with Serializable {
 
   /**
    * 如果指定了 name 则返回该 name，否则按顺序生成一个
+   *
    * @param name
    * @return
    */
@@ -52,6 +53,7 @@ object DQStepBuilder {
   def buildStepOptByDataSourceParam(
       context: DQContext,
       dsParam: DataSourceParam): Option[DQStep] = {
+    // 依据 Batch 或 Streaming 选择对应的 DataSourceParamStepBuilder
     getDataSourceParamStepBuilder(context.procType)
       .flatMap(_.buildDQStep(context, dsParam))
   }
@@ -66,11 +68,13 @@ object DQStepBuilder {
   }
 
   def buildStepOptByRuleParam(context: DQContext, ruleParam: RuleParam): Option[DQStep] = {
+    // 获取 dsl 类型，可以是 spark-sql、df-ops 或 griffin-dsl
     val dslType = ruleParam.getDslType
-    // 获取数据源名称列表，baseline 类型在前
+    // 获取数据源 name 列表，baseline 类型在前
     val dsNames = context.dataSourceNames
+    // 获取已注册的函数名称列表
     val funcNames = context.functionNames
-    // 基于 DSL 类型选择对应的构造器
+    // 基于 DSL 类型选择对应的 RuleParamStepBuilder，并调用 RuleParamStepBuilder#buildDQStep 方法构造监控任务
     val dqStepOpt = getRuleParamStepBuilder(dslType, dsNames, funcNames)
       .flatMap(_.buildDQStep(context, ruleParam))
     dqStepOpt.toSeq
@@ -84,8 +88,11 @@ object DQStepBuilder {
       dsNames: Seq[String],
       funcNames: Seq[String]): Option[RuleParamStepBuilder] = {
     dslType match {
+      // spark-sql
       case SparkSql => Some(SparkSqlDQStepBuilder())
+      // df-ops
       case DataFrameOpsType => Some(DataFrameOpsDQStepBuilder())
+      // griffin-sql
       case GriffinDsl => Some(GriffinDslDQStepBuilder(dsNames, funcNames))
       case _ => None
     }

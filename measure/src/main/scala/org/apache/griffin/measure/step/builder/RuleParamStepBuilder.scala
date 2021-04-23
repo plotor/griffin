@@ -31,6 +31,7 @@ trait RuleParamStepBuilder extends DQStepBuilder {
   type ParamType = RuleParam
 
   def buildDQStep(context: DQContext, param: ParamType): Option[DQStep] = {
+    // 依据具体的 DSL 类型，构造 DQ 任务
     val steps = buildSteps(context, param)
     if (steps.size > 1) Some(SeqDQStep(steps))
     else if (steps.size == 1) steps.headOption

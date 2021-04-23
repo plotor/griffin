@@ -22,6 +22,9 @@ import org.apache.griffin.measure.context.DQContext
 import org.apache.griffin.measure.step.DQStep
 import org.apache.griffin.measure.step.transform.DataFrameOpsTransformStep
 
+/**
+ * df-ops 类型 DSL 对应的 DQ 任务构造器实现
+ */
 case class DataFrameOpsDQStepBuilder() extends RuleParamStepBuilder {
 
   def buildSteps(context: DQContext, ruleParam: RuleParam): Seq[DQStep] = {

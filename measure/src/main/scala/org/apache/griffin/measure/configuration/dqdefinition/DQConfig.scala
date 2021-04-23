@@ -150,6 +150,12 @@ case class DataConnectorParam(
 @JsonInclude(Include.NON_NULL)
 case class EvaluateRuleParam(@JsonProperty("rules") private val rules: List[RuleParam])
     extends Param {
+
+  /**
+   * 获取 rules 配置，一个任务可以配置多个
+   *
+   * @return
+   */
   def getRules: Seq[RuleParam] = if (rules != null) rules else Nil
 
   def validate(): Unit = {

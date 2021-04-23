@@ -23,6 +23,12 @@ import org.apache.griffin.measure.step.DQStep
 import org.apache.griffin.measure.step.builder.dsl.parser.GriffinDslParser
 import org.apache.griffin.measure.step.builder.dsl.transform.Expr2DQSteps
 
+/**
+ * griffin-dsl 类型 DSL 对应的 DQ 任务构造器实现
+ *
+ * @param dataSourceNames
+ * @param functionNames
+ */
 case class GriffinDslDQStepBuilder(dataSourceNames: Seq[String], functionNames: Seq[String])
     extends RuleParamStepBuilder {
 

@@ -35,8 +35,9 @@ object DQJobBuilder {
    * @return       dq job
    */
   def buildDQJob(context: DQContext, evaluateRuleParam: EvaluateRuleParam): DQJob = {
+    // 获取任务监控规则配置，可以有多个
     val ruleParams = evaluateRuleParam.getRules
-    // 基于规则参数构造 DQ 任务
+    // 基于规则配置构造 DQ 任务
     buildDQJob(context, ruleParams)
   }
 
@@ -48,11 +49,13 @@ object DQJobBuilder {
    */
   def buildDQJob(context: DQContext, ruleParams: Seq[RuleParam]): DQJob = {
     // build steps by datasources
+    // 1. 处理监控任务数据源
     val dsSteps = context.dataSources.flatMap { dataSource =>
       DQStepBuilder.buildStepOptByDataSourceParam(context, dataSource.dsParam)
     }
 
     // build steps by rules
+    // 2. 处理监控规则
     val ruleSteps = ruleParams.flatMap { ruleParam =>
       DQStepBuilder.buildStepOptByRuleParam(context, ruleParam)
     }

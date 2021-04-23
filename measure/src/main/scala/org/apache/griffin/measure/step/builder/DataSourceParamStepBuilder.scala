@@ -29,8 +29,14 @@ trait DataSourceParamStepBuilder extends DQStepBuilder {
 
   type ParamType = DataSourceParam
 
+  /**
+   *
+   * @param context DQ 任务上下文对象
+   * @param param   数据源参数配置
+   * @return
+   */
   def buildDQStep(context: DQContext, param: ParamType): Option[DQStep] = {
-    // 获取 step name，如果指定了 name 则返回该 name，否则按顺序生成一个
+    // 获取 step 名称，如果指定了 name 则直接返回，否则按顺序生成一个
     val name = getStepName(param.getName)
 
     param.getConnector match {

@@ -22,9 +22,20 @@ import org.apache.griffin.measure.context.DQContext
 import org.apache.griffin.measure.step.DQStep
 import org.apache.griffin.measure.step.transform.SparkSqlTransformStep
 
+/**
+ * spark-sql 类型 DSL 对应的 DQ 任务构造器实现
+ */
 case class SparkSqlDQStepBuilder() extends RuleParamStepBuilder {
 
+  /**
+   * 构造 spark-sql 类型的 DQ 任务步骤
+   *
+   * @param context
+   * @param ruleParam
+   * @return
+   */
   def buildSteps(context: DQContext, ruleParam: RuleParam): Seq[DQStep] = {
+    // 获取 step 名称，默认使用 out.dataframe.name 配置，否则按序生成一个
     val name = getStepName(ruleParam.getOutDfName())
     val transformStep = SparkSqlTransformStep(
       name,
@@ -32,6 +43,7 @@ case class SparkSqlDQStepBuilder() extends RuleParamStepBuilder {
       ruleParam.getDetails,
       None,
       ruleParam.getCache)
+    //
     transformStep +: buildDirectWriteSteps(ruleParam)
   }
 
