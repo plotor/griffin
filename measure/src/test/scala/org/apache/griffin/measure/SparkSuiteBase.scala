@@ -33,6 +33,7 @@ trait SparkSuiteBase extends AnyFlatSpec with BeforeAndAfterAll {
 
   override def beforeAll() {
     super.beforeAll()
+    println("clean test hive data")
     cleanTestHiveData()
     conf = new SparkConf(false)
     spark = SparkSession.builder

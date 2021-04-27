@@ -57,7 +57,7 @@ under the License.
         <!-- Testing -->
         <scoverage.plugin.version>1.4.0</scoverage.plugin.version>
         <mockito.version>3.2.2.0</mockito.version>
-        <scalatest.version>3.2.3</scalatest.version>
+        <scalatest.version>3.2.8</scalatest.version>
     </properties>
 
     <dependencies>

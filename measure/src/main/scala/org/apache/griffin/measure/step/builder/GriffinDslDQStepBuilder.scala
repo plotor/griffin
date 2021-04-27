@@ -38,8 +38,11 @@ case class GriffinDslDQStepBuilder(dataSourceNames: Seq[String], functionNames: 
   val parser: GriffinDslParser = GriffinDslParser(dataSourceNames, filteredFunctionNames)
 
   def buildSteps(context: DQContext, ruleParam: RuleParam): Seq[DQStep] = {
+    // out.dataframe.name
     val name = getStepName(ruleParam.getOutDfName())
+    // rule
     val rule = ruleParam.getRule
+    // dq.type
     val dqType = ruleParam.getDqType
     try {
       val result = parser.parseRule(rule, dqType)

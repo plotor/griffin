@@ -18,7 +18,10 @@
 package org.apache.griffin.measure.step.builder.dsl.transform
 
 import org.apache.griffin.measure.configuration.dqdefinition.RuleParam
-import org.apache.griffin.measure.configuration.enums.FlattenType.{ArrayFlattenType, DefaultFlattenType}
+import org.apache.griffin.measure.configuration.enums.FlattenType.{
+  ArrayFlattenType,
+  DefaultFlattenType
+}
 import org.apache.griffin.measure.configuration.enums.OutputType._
 import org.apache.griffin.measure.configuration.enums.ProcessType._
 import org.apache.griffin.measure.context.DQContext

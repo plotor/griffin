@@ -18,7 +18,10 @@
 package org.apache.griffin.measure.context.streaming.checkpoint.offset
 
 import org.apache.griffin.measure.configuration.dqdefinition.CheckpointParam
-import org.apache.griffin.measure.context.streaming.checkpoint.lock.{CheckpointLock, CheckpointLockSeq}
+import org.apache.griffin.measure.context.streaming.checkpoint.lock.{
+  CheckpointLock,
+  CheckpointLockSeq
+}
 
 object OffsetCheckpointClient extends OffsetCheckpoint with OffsetOps {
   var offsetCheckpoints: Seq[OffsetCheckpoint] = Nil

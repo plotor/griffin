@@ -29,6 +29,7 @@ case class GriffinDslParser(dataSourceNames: Seq[String], functionNames: Seq[Str
   import Operator._
 
   def parseRule(rule: String, dqType: DqType): ParseResult[Expr] = {
+    // 基于 dq 规则类型获取对应的 Parser
     val rootExpr = dqType match {
       case Accuracy => logicalExpression
       case Profiling => profilingClause

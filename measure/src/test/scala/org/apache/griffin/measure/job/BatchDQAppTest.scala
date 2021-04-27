@@ -17,9 +17,10 @@
 
 package org.apache.griffin.measure.job
 
-import org.apache.spark.sql.AnalysisException
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success, Try}
+
+import org.apache.spark.sql.AnalysisException
 
 import org.apache.griffin.measure.Application.readParamFile
 import org.apache.griffin.measure.configuration.dqdefinition.EnvConfig
@@ -37,11 +38,16 @@ class BatchDQAppTest extends DQAppTest {
         error(ex.getMessage, ex)
         sys.exit(-2)
     }
+    println("load env config success")
 
     sparkParam = envParam.getSparkParam
 
     Try {
-      sparkParam.getConfig.foreach { case (k, v) => spark.conf.set(k, v) }
+      sparkParam.getConfig.foreach {
+        case (k, v) =>
+          println(s"set spark conf, name: $k, value: $v")
+          spark.conf.set(k, v)
+      }
       spark.conf.set("spark.app.name", "BatchDQApp Test")
       spark.conf.set("spark.sql.crossJoin.enabled", "true")
 
@@ -55,6 +61,7 @@ class BatchDQAppTest extends DQAppTest {
   }
 
   def runAndCheckResult(metrics: Map[String, Any]): Unit = {
+    println("run and check result")
     dqApp.run match {
       case Success(ret) => assert(ret)
       case Failure(ex) =>
